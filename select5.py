@@ -25,14 +25,14 @@ myself = lambda: inspect.stack()[1][3]
 from ruler0 import Ruler
 
 X,Y = Ruler.X,Ruler.Y
+zX,zY = Ruler.zX,Ruler.zY
 
 class Select(Ruler):
-	file_stub = 'git_Apr24/images/hsb'
+	file_stub = 'images/hsb'
 	
 	def __init__(self,parent,dp) -> None:
 		self.dp = dp
 		self.parent = parent
-		self.pt_win = self.parent.woZ.win
 
 	def change_coords(self):
 		"""illustrates effect of setCoords on box drawings"""
@@ -70,10 +70,12 @@ class Select(Ruler):
 				#  Point(x,y).draw(self.parent.woX.win) 
 		self.save_show()
 
-	def save_show(self):
-		self.file_name = Select.file_stub+str(self.dp) + '.png'
-		self.image.save(self.file_name)
-		in_window(X/2,Y/2,self.file_name,self.parent.woX.win)
+	def save_show(self,dp):
+		self.file_name = Select.file_stub+str(dp) + '.png'
+		if not hasattr(self,'image'): print('no image')
+		else:
+			self.image.save(self.file_name)
+			in_window(X/2,Y/2,self.file_name,self.parent.woX.win)
 		
 	def show_image_file(self,dp,label):  # from label symbol
 		self.file_name = Select.file_stub+str(dp) + '.png'
@@ -85,25 +87,26 @@ class Select(Ruler):
 	def select(self):
 		"""select box region with cursor  Confirm with ==> button"""
 		print(myself())
-		win = self.parent.woX.win
-		self.parent.bt.activate()
-		bx = Circle(Point(0,0),1).draw(win)  #dummy for undraw
-		bx_drawn = False   	  				 # just dummy drawn
+		# self.parent.bt.draw()
+		# self.parent.bt.activate()
+		bx = Circle(Point(0,0),1).draw(self.parent.woX.win)  #dummy for undraw
+		bx_drawn = False   	  				 # dummy drawn
 		while True:
-			c = win.getMouse()
+			c = self.parent.woX.win.getMouse()
 			if self.parent.bt.clicked(c) and bx_drawn: break
 			self.cx,self.cy,self.wd = c.x,c.y,Ruler.xside2
 			self.xsel = box_from_center(self.cx,self.cy,self.wd)
 			bx.undraw()
 			bx = rec_draw(self.xsel,self.parent.woX.win)
-			bx_drawn = True		
-		# self.bt.flash()
-		# self.bt.wait()
+			bx_drawn = True
+		xdr = Select.xside2/20  # xside/10 = diameter
+		Circle(Point(self.xsel[0],self.xsel[1]),5).draw(self.parent.woX.win).setFill('darkgray')
+		self.parent.bt.undraw
+		self.parent.bt.deactivate
 
 	def draw_selection(self,trxz):
 		"""draw selected region using transform and iteration"""
 		print(myself(),'trxz',trxz)
-		# self.depth = dp
 		sp = 1
 		maxIt = 100
 
@@ -117,33 +120,30 @@ class Select(Ruler):
 				 r,g,b = colorsys.hsv_to_rgb(hue,0.5,1)
 				 r,g,b = int(255*r),int(255*g),int(255*b)
 				 self.image.pixels[x,y] =  r,g,b
+				#  for debugging
 				#  Point(*self.trxz.world(x,y)).draw(self.parent.woZ.win).setOutline(color_rgb(r,g,b))
-				#  Point(x,y).draw(self.parent.woX.win)  
-		self.dp = 0
-		self.save_show()
+				#  Point(x,y).draw(self.parent.woX.win) 
+		# self.image.show()
+		print('')
 
 	def get_zsel(self,dp):
 		xsel = self.xsel
+		xdr = Select.xside2/20 
 		if dp==0: 
 			self.trxz = Transform(X,Y,*Ruler.gzbox)
 			zsel = self.zsel = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
 			rec_draw(self.zsel,self.parent.woZ.win)
-			Circle(Point(xsel[0],xsel[1]),5).draw(self.parent.woX.win)
-			self.trxz = Transform(X,Y,*self.zsel)   # same as zsel0
 		else:
 			self.trxz = Transform(X,Y,*self.zsel)
 			zsel = self.zsel = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
 			rec_draw(self.zsel,self.parent.woZ.win)
-			Circle(Point(xsel[0],xsel[1]),5).draw(self.parent.woX.win)
-			self.trxz = Transform(X,Y,*self.zsel)   # same as zsel0
+		zdr = self.trxz.xscale*2*xdr  # xdr * zxscale
+		Circle(Point(zsel[0],zsel[1]),zdr).draw(self.parent.woZ.win).setFill('darkgray')
 
-		# new zsel
-		# zsel = self.zsel = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
-		# print('zsel',round_all(self.zsel,3))
-		# self.parent.zsel = self.zsel
-			Circle(Point(zsel[0],zsel[1]),0.05).draw(self.parent.woZ.win)
+		# use in draw_selection
+		self.trxz = Transform(X,Y,*self.zsel)
 
-	def get_xz_Transform(self):
+	def get_xz_Transformx(self):
 		xsel = self.xsel
 		zsel = self.zsel = Select.gzbox
 		self.trxz = Transform(X,Y,*self.zsel)
@@ -184,9 +184,7 @@ class Select(Ruler):
 			self.zsel = ss.trxz.world(xsel[0],xsel[1]) + ss.trxz.world(xsel[2],xsel[3])
 			
 class SelectSeries(Ruler):
-	file_stub = 'git_Apr24/images/hsb'
 
-	
 	def __init__(self) -> None:
 		self.woZ = WindowObject('Z',X,Y)
 		self.woX = WindowObject('X',X,Y)
@@ -194,17 +192,19 @@ class SelectSeries(Ruler):
 
 	def init_windows(self):
 		"""shows initial state in both windows"""
-		self.file_name = SelectSeries.file_stub + '0.png'
-		print(self.file_name)
+		self.file_name = Select.file_stub + '0.png'
 		in_window(-0.5,0,self.file_name,self.woZ.win)
 		in_window(X/2,Y/2,self.file_name,self.woX.win)
+		Circle(Point(0,0),3*X/50).draw(self.woX.win).setFill('darkgray')
+		Circle(Point(-2,-1.5),3*zX/50).draw(self.woZ.win).setFill('darkgray')
+
 
 	def init_button(self,win):
 		win = self.woX.win
 		self.bt = Button(win, Point( 460, 480), 70,30,'==>')
 		self.bt.label.setSize(24)
-		self.bt.draw()
-		self.bt.activate()
+		# self.bt.draw()
+		# self.bt.activate()
 
 	def draw_whole(self):
 		sl = Select(self,0)
@@ -238,27 +238,34 @@ class SelectSeries(Ruler):
 			s.parent.woX.win.getMouse()
 			s.draw_selection(dp,self.trxz)
 
-	def implement_series(self):
-		dp = 0
+	def select_series(self,dp):
+		s = Select(self,dp)   # self is selseries id
+		s.file_name = Select.file_stub+str(dp)+'.png'
+		print('select series',s.file_name)
+		s.save_show(dp) 
+		Circle(Point(0,0),3*X/50).draw(self.woX.win).setFill('blue')
+		s.parent.bt.draw()
+		s.parent.bt.activate()
 		while True:
-			s = Select(self,dp)   # self is selseries parent ss
 			s.select()
-
 			grid((-3,-3,3,3),s.parent.woZ.win,1)
 			s.get_zsel(dp)
 			rec_draw(s.zsel,s.parent.woZ.win) 
 			s.print_stats()
-			self.bt.wait()
-
 			s.draw_selection(s.trxz)
-			s.save_show() 
+
 			dp += 1			 
+			s.file_name = Select.file_stub+str(dp)+'.png'
+			s.save_show(dp) 
+			Circle(Point(0,0),3*X/50).draw(self.woX.win).setFill('blue')
+			s.parent.bt.draw()
+			s.parent.bt.activate()
 
 if __name__ == "__main__":
-	def driver1():
+	def draw_state0():
 		ss = SelectSeries()
 		ss.draw_whole()
-	driver1()
+	# draw_state0()
 
 	def driver2():
 		ss = SelectSeries()
@@ -268,11 +275,11 @@ if __name__ == "__main__":
 		s.wo.win.getMouse
 	# driver2()
 
-	def driver3():
+	def zoom_sequence():
 		ss = SelectSeries()
 		ss.init_windows()
 		ss.init_button(ss.woX)
-		ss.implement_series()
+		ss.select_series(0)
 
-	# driver3()
+	zoom_sequence()
 

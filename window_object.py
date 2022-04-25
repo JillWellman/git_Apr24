@@ -39,13 +39,7 @@ class WindowObject(Ruler):
 		else:
 			print('no such window as',label)
 			exit()
-		self.mark_min_window_corner() 
 
-	def mark_min_window_corner(self):
-		xa,ya,xb,yb = self.ctpl
-		minx,miny = min_corner(self.ctpl)
-		side = abs(xb - xa)
-		Circle(Point(minx,miny),side/20).draw(self.win).setFill('black')
 
 
 if __name__=='__main__':

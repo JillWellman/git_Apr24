@@ -6,6 +6,9 @@ sys.path.append (r'/Users/jillwellman_sept09_2012/Desktop/Python/myProjects/myMo
 from graphics import *
 from mygraphics import *
 
+import inspect
+myself = lambda: inspect.stack()[1][3]
+
 class Button:
 
 	"""A button is a labeled rectangle in a window.
@@ -31,9 +34,11 @@ class Button:
 		self.deactivate()
 
 	def draw(self):
+		print(myself())
 		try: self.rect.draw(self.enclosing_win)
 		except:
 			GraphicsError
+			print('draw button error')
 		try: self.label.draw(self.enclosing_win)
 		except:
 			GraphicsError
