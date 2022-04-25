@@ -7,21 +7,7 @@ from mygraphics import *
 import colorsys
 
 
-def cont(win, point = (35,15),lable = 'CONTINUE'):	
-	px,py = point
-	xa,ya,xb,yb = X-2,Y-2, X-2*px,Y-2*py
-	r = Rectangle(Point(xa,ya),Point(xb,yb)).draw(win)
-	r.setFill('white')
-	r.setWidth(2)
-	t = Text(Point(X-px,Y-py),lable).draw(win)
-	while True:
-		clk = win.getMouse()
-		cx,cy = clk.x,clk.y
-		if X - cx <= 70 and Y - cy <= 30:
-			t.undraw()
-			r.undraw()
-			break
-	return 
+
 
 def rec_draw(abox,win) :
     xa,ya,xb,yb =  abox
@@ -29,10 +15,19 @@ def rec_draw(abox,win) :
 
 def grid(crnLst,win,u):
 	xa,ya,xb,yb = crnLst
-	for i in range(xa,xb):
-		for j in range(ya,yb):
-			Rectangle(Point(i*u,j*u),Point((i+1)*u,(j+1)*u)).draw(win)
+	for i in range(xa,xb+1,u):
+		for j in range(ya,yb+1,u):
+			Rectangle(Point(i,j),Point(i+u,j+u)).draw(win)
+			# Text(Point(i-0.03*u,j-0.07*u),str(i)+', '+str(j)).draw(win).setSize(18)
+			Text(Point(i+0.15,j-0.07*u),str(i)+', '+str(j)).draw(win).setSize(18)
+
+def gridx(crnLst,win,u):
+	xa,ya,xb,yb = crnLst
+	for i in range(xa,xb,u):
+		for j in range(ya,yb,u):
+			Rectangle(Point(i,j),Point(i+u,j+u)).draw(win)
 			Text(Point(i-0.08,j+0.07),str(i)+','+str(j)).draw(win).setSize(18)
+
 
 def grid_labels(box,win):
 	u = 1/2

@@ -27,6 +27,14 @@ from ruler0 import Ruler
 X,Y = Ruler.X,Ruler.Y
 zX,zY = Ruler.zX,Ruler.zY
 
+def show_image_file(dp,label,win):  # from label symbol
+	file_name = Select.file_stub+str(dp) + '.png'
+	if label=='X':
+		in_window(X/2,Y/2,file_name,win)
+	elif label=='Z':
+		in_window(-0.5,0,file_name,win)
+
+
 class Select(Ruler):
 	file_stub = 'images/hsb'
 	
@@ -70,25 +78,17 @@ class Select(Ruler):
 				#  Point(x,y).draw(self.parent.woX.win) 
 		self.save_show()
 
-	def save_show(self,dp):
+	def save_show_windows(self,dp):
 		self.file_name = Select.file_stub+str(dp) + '.png'
 		if not hasattr(self,'image'): print('no image')
 		else:
 			self.image.save(self.file_name)
 			in_window(X/2,Y/2,self.file_name,self.parent.woX.win)
-		
-	def show_image_file(self,dp,label):  # from label symbol
-		self.file_name = Select.file_stub+str(dp) + '.png'
-		if label=='X':
-			in_window(X/2,Y/2,self.file_name,self.parent.woX.win)
-		elif label=='Z':
 			in_window(-0.5,0,self.file_name,self.parent.woZ.win)
-
+		
 	def select(self):
 		"""select box region with cursor  Confirm with ==> button"""
 		print(myself())
-		# self.parent.bt.draw()
-		# self.parent.bt.activate()
 		bx = Circle(Point(0,0),1).draw(self.parent.woX.win)  #dummy for undraw
 		bx_drawn = False   	  				 # dummy drawn
 		while True:
@@ -99,10 +99,10 @@ class Select(Ruler):
 			bx.undraw()
 			bx = rec_draw(self.xsel,self.parent.woX.win)
 			bx_drawn = True
+		# minimum coord corner of xsel
 		xdr = Select.xside2/20  # xside/10 = diameter
 		Circle(Point(self.xsel[0],self.xsel[1]),5).draw(self.parent.woX.win).setFill('darkgray')
-		self.parent.bt.undraw
-		self.parent.bt.deactivate
+	
 
 	def draw_selection(self,trxz):
 		"""draw selected region using transform and iteration"""
@@ -127,17 +127,19 @@ class Select(Ruler):
 		print('')
 
 	def get_zsel(self,dp):
-		xsel = self.xsel
+		if not hasattr(self,'zsel'):
+			self.zsel = Ruler.gzbox
+		self.trxz = Transform(X,Y,*self.zsel)
+
+		self.trxz = Transform(X,Y,*Ruler.gzbox)
+
 		xdr = Select.xside2/20 
-		if dp==0: 
-			self.trxz = Transform(X,Y,*Ruler.gzbox)
-			zsel = self.zsel = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
-			rec_draw(self.zsel,self.parent.woZ.win)
-		else:
-			self.trxz = Transform(X,Y,*self.zsel)
-			zsel = self.zsel = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
-			rec_draw(self.zsel,self.parent.woZ.win)
 		zdr = self.trxz.xscale*2*xdr  # xdr * zxscale
+
+		xsel = self.xsel
+		zsel = self.zsel = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
+
+		rec_draw(self.zsel,self.parent.woZ.win)
 		Circle(Point(zsel[0],zsel[1]),zdr).draw(self.parent.woZ.win).setFill('darkgray')
 
 		# use in draw_selection
@@ -171,7 +173,7 @@ class Select(Ruler):
 		if hasattr(self,'trxz'):
 			print('trxz',self.trxz)
 
-	def selection_sequence(self,dp,cx,cy):
+	def selection_sequencex(self,dp,cx,cy):
 		xside2 = Select.xside2
 		ss = self.parent
 		if dp==0:
@@ -198,13 +200,13 @@ class SelectSeries(Ruler):
 		Circle(Point(0,0),3*X/50).draw(self.woX.win).setFill('darkgray')
 		Circle(Point(-2,-1.5),3*zX/50).draw(self.woZ.win).setFill('darkgray')
 
-
 	def init_button(self,win):
 		win = self.woX.win
 		self.bt = Button(win, Point( 460, 480), 70,30,'==>')
 		self.bt.label.setSize(24)
-		# self.bt.draw()
-		# self.bt.activate()
+		self.bt.draw()
+		self.bt.activate()
+
 
 	def draw_whole(self):
 		sl = Select(self,0)
@@ -216,12 +218,10 @@ class SelectSeries(Ruler):
 		self.trxz = Transform(X,Y,*Ruler.gzbox)  # used for draw selection
 		sl.print_stats()
 
-		sl.parent.woX.win.getMouse()
+		# sl.parent.woX.win.getMouse()
 		sl.draw_selection(self.trxz)
 
-		sl.parent.woX.win.getMouse()
-
-	def sequence_click_select(self):
+	def sequence_click_selectx(self):
 		"""implement states 0 and 1"""
 		for dp in range(2):
 			s = Select(self,dp)
@@ -230,7 +230,6 @@ class SelectSeries(Ruler):
 			self.selection_sequence(dp,cx,cy)
 
 			rec_draw(s.xsel,self.parent.woX.win)
-			rec_draw(s.zsel,s.parent.woZ.win).setOutline('blue')
 
 			self.print_stats()
 			self.trxz = Transform(X,Y,*self.zsel)  # used for draw selection
@@ -239,41 +238,44 @@ class SelectSeries(Ruler):
 			s.draw_selection(dp,self.trxz)
 
 	def select_series(self,dp):
-		s = Select(self,dp)   # self is selseries id
-		s.file_name = Select.file_stub+str(dp)+'.png'
-		print('select series',s.file_name)
-		s.save_show(dp) 
-		Circle(Point(0,0),3*X/50).draw(self.woX.win).setFill('blue')
-		s.parent.bt.draw()
-		s.parent.bt.activate()
+		# might use dp to start at arbitrary depth
+		self.init_windows()
+		self.init_button(self.woX.win)
+		
 		while True:
-			s.select()
+			s = Select(self,dp)   # s is state, self is parent/select_series
+			s.select()  # select region by center
 			grid((-3,-3,3,3),s.parent.woZ.win,1)
+
 			s.get_zsel(dp)
 			rec_draw(s.zsel,s.parent.woZ.win) 
-			s.print_stats()
-			s.draw_selection(s.trxz)
 
+			s.print_stats()
+
+			s.draw_selection(s.trxz)  
 			dp += 1			 
 			s.file_name = Select.file_stub+str(dp)+'.png'
-			s.save_show(dp) 
-			Circle(Point(0,0),3*X/50).draw(self.woX.win).setFill('blue')
-			s.parent.bt.draw()
-			s.parent.bt.activate()
+			s.save_show_windows(dp) 
+			Circle(Point(0,0),3*X/50).draw(self.woX.win).setFill('darkgray')
+
+			self.bt.undraw()
+			self.bt.draw()  ## error
+			self.bt.activate()
+
+
+
+			s.print_stats()   #Transform will be different
 
 if __name__ == "__main__":
 	def draw_state0():
 		ss = SelectSeries()
 		ss.draw_whole()
+		show_image_file(0,'X',ss.woX.win)
+		show_image_file(0,'Z',ss.woZ.win)
+		ss.woX.win.getMouse()
+
 	# draw_state0()
 
-	def driver2():
-		ss = SelectSeries()
-		ss.init_windows()
-		ss.sequence_click_select()
-
-		s.wo.win.getMouse
-	# driver2()
 
 	def zoom_sequence():
 		ss = SelectSeries()
