@@ -33,7 +33,7 @@ class WindowObject(Ruler):
 			self.ctpl = Ruler.gscreen
 			self.win.setCoords(*self.ctpl)
 		elif self.label=='Z':
-			self.lctpl = (X,Y,  2*X + 160, 60)
+			self.lctpl = (X,Y,  2*X + 130, 60)
 			window_location(self.win,*self.lctpl)  # right panel
 			self.ctpl = Ruler.gzbox
 			self.win.setCoords(*self.ctpl)
@@ -52,8 +52,8 @@ if __name__=='__main__':
 		wo = WindowObject(label,X,Y)
 		wo.name = 'win' + str(label)
 
-		if n==1: grid((0,0,X,Y),wo.win,100)
-		elif n==2: grid((-3,-3,3,3),wo.win,1)
+		if label=='C': grid((0,0,X,Y),wo.win,100)
+		elif label=='Z': grid((-3,-3,3,3),wo.win,1)
 
 		n += 1
 

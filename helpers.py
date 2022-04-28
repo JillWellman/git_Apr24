@@ -14,14 +14,6 @@ def rec_draw(abox,win) :
     return Rectangle(Point(xa,ya),Point(xb,yb)).draw(win)
 
 
-# def grid(crnLst,win,u):
-# 	xa,ya,xb,yb = crnLst
-# 	for i in range(xa,xb+1,u):
-# 		for j in range(ya,yb+1,u):
-# 			Rectangle(Point(i,j),Point(i+u,j+u)).draw(win)
-# 			# Text(Point(i-0.03*u,j-0.07*u),str(i)+', '+str(j)).draw(win).setSize(18)
-# 			Text(Point(i+0.15,j-0.07*u),str(i)+', '+str(j)).draw(win).setSize(18)
-
 def grid(crnLst,win,u):
 	xa,ya,xb,yb = crnLst
 	xa,xb = int(xa),int(xb)
@@ -31,12 +23,6 @@ def grid(crnLst,win,u):
 			# Text(Point(i-0.03*u,j-0.07*u),str(i)+', '+str(j)).draw(win).setSize(18)
 			Text(Point(i+0.15,j-0.07*u),str(i)+', '+str(j)).draw(win).setSize(18)
 
-def gridx(crnLst,win,u):
-	xa,ya,xb,yb = crnLst
-	for i in range(xa,xb,u):
-		for j in range(ya,yb,u):
-			Rectangle(Point(i,j),Point(i+u,j+u)).draw(win)
-			Text(Point(i-0.08,j+0.07),str(i)+','+str(j)).draw(win).setSize(18)
 
 
 def grid_labels(box,win):
@@ -77,6 +63,7 @@ def mandelbrot(x,y,maxIt):
 	z = complex(0,0)
 	for i in range(maxIt):
 		if abs(z) > 2: break
+		# zn+1 = zn2 + c. 
 		z = z * z + c
 	hue = (i/maxIt)
 	return hue

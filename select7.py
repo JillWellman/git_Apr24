@@ -28,7 +28,7 @@ from ruler0 import Ruler
 
 X,Y = Ruler.X,Ruler.Y
 zX,zY = Ruler.zX,Ruler.zY
-maxIt = 1000   # may need to change with multiple zooms
+maxIt = 100   # may need to change with multiple zooms
 
 def show_image_file(dp,label,win):  # from label symbol
 	file_name = Select.file_stub+str(dp) + '.png'
@@ -39,7 +39,7 @@ def show_image_file(dp,label,win):  # from label symbol
 
 
 class Select(Ruler):
-	file_stub = 'images/hsb'
+	# file_stub = 'images/hsb'
 	
 	def __init__(self,parent,dp) -> None:
 		self.dp = dp
@@ -64,7 +64,7 @@ class Select(Ruler):
 		"""select box region with cursor  Confirm with ==> button"""
 		print(myself())
 		bx = Circle(Point(0,0),1).draw(self.parent.woX.win)  #dummy for undraw
-		bx_drawn = False   	  				 # dummy drawn
+		bx_drawn = False   	  				 # only dummy drawn
 		while True:
 			c = self.parent.woX.win.getMouse()
 			if self.parent.bt.clicked(c) and bx_drawn: break
@@ -73,11 +73,7 @@ class Select(Ruler):
 			bx.undraw()
 			bx = rec_draw(self.xsel,self.parent.woX.win)
 			bx_drawn = True
-
-	def	ztransform(self):
-		xsel = self.xsel
-		self.zsel = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
-		self.parent.trxz = Transform(X,Y,*self.zsel)
+		# self.parent.xsel = self.xsel
 
 	def darkgray_circles(self):
 		xdr = Select.xside2/20 
@@ -89,10 +85,11 @@ class Select(Ruler):
 	
 
 class SelectSeries(Ruler):
+	file_stub = 'images/hsb'
 
 	def __init__(self) -> None:
-		self.woZ = WindowObject('Z',X,Y)
 		self.woX = WindowObject('X',X,Y)
+		self.woZ = WindowObject('Z',X,Y)
 		self.woC = WindowObject('C',X,Y)
 		self.zsel= Ruler.gzbox
 
@@ -102,7 +99,7 @@ class SelectSeries(Ruler):
 			s = Select(self,dp)
 			s.select()
 			self.xsel = s.xsel
-			s.parent.get_zsel()
+			self.get_zsel()
 			self.print_stats(dp)
 			self.bt.wait()
 
@@ -114,7 +111,6 @@ class SelectSeries(Ruler):
 
 			self.bt.draw()
 			self.bt.wait()
-
 
 
 	def get_zsel(self):
@@ -152,7 +148,7 @@ class SelectSeries(Ruler):
 
 	def save_show_window(self,dp,win):
 		print(myself(),win)
-		self.file_name = Select.file_stub+str(dp) + '.png'
+		self.file_name = SelectSeries.file_stub+str(dp) + '.png'
 		if not hasattr(self,'image'): print('no image')
 		else:
 			self.image.save(self.file_name)
@@ -162,7 +158,7 @@ class SelectSeries(Ruler):
 				in_window(-0.5,0,self.file_name,self.woZ.win)
 
 			elif win=='C':
-				self.file_name = Select.file_stub+str(dp-1) + '.png'
+				self.file_name = SelectSeries.file_stub+str(dp-1) + '.png'
 				in_window(X/2,Y/2,self.file_name,self.woC.win)
 
 	def print_stats(self,dp):
@@ -177,11 +173,17 @@ class SelectSeries(Ruler):
 
 	def init_windows(self,dp):
 		"""shows initial state in both windows"""
-		self.file_name = Select.file_stub + str(dp) + '.png'
+		self.file_name = SelectSeries.file_stub + str(dp) + '.png'
 		in_window(-0.5,0,self.file_name,self.woZ.win)
 		in_window(X/2,Y/2,self.file_name,self.woX.win)
-		Circle(Point(0,0),3*X/50).draw(self.woX.win).setFill('darkgray')
-		Circle(Point(-2,-1.5),3*zX/50).draw(self.woZ.win).setFill('darkgray')
+		self.origin_marker('X')
+		self.origin_marker('Z')
+
+	def origin_marker(self,win_label):
+		if win_label in ['X','C']:
+			Circle(Point(0,0),3*X/50).draw(self.woX.win).setFill('darkgray')
+		elif win_label=='Z':
+			Circle(Point(-2,-1.5),3*zX/50).draw(self.woZ.win).setFill('darkgray')
 
 	def init_button(self,win):
 		win = self.woX.win
@@ -201,41 +203,18 @@ class SelectSeries(Ruler):
 		self.print_stats(0)
 
 		self.draw_image(0,self.trxz)
-
-	def select_seriesx(self,dp):
-		# might use dp to start at arbitrary depth
-		self.dp = dp
-		self.init_windows(dp)
-		self.init_button(self.woX.win)
 		
-		while True:
-			print(3*' = = =')
-			s = Select(self,dp)   # s is state, self is parent/select_series
-			s.select()  # select region by center
-			s.get_zsel()
-			dp += 1		
-			s.depth = dp 
-			s.file_name = Select.file_stub+str(dp)+'.png'
 
-			s.draw_image(s.trxz)
-			s.save_show_window(dp,s.parent.woX.win) 
-			Circle(Point(0,0),3*X/50).draw(self.woX.win).setFill('darkgray')
-			self.bt.draw()
-
-			s.print_stats()   #Transform will be different
-
-			self.bt.wait()
-			in_window(-0.5,0,s.file_name,self.woZ.win)
-
+	
 			
-
 
 if __name__ == "__main__":
 	def draw_state0():
 		ss = SelectSeries()
 		ss.draw_whole()
-		show_image_file(0,'X',ss.woX.win)
-		show_image_file(0,'Z',ss.woZ.win)
+		# show_image_file(0,'X',ss.woX.win)
+		# show_image_file(0,'Z',ss.woZ.win)
+		ss.image.save(SelectSeries.file_stub + '0.png')
 		ss.woX.win.getMouse()
 
 	# draw_state0()
