@@ -7,7 +7,7 @@ print( pathlib.Path.cwd )
 print( pathlib.Path )
 
 
-dir_sdz = 'select_draw_zoom/images'
+dir_sdz = '../'
 
 
 

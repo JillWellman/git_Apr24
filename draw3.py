@@ -8,7 +8,6 @@ depth = 3, show spiral
 #spiral -0.7435, 0.1314,0.002)
 
 import sys
-from zlib import Z_SYNC_FLUSH
 
 from matplotlib.pyplot import box
 from numpy import recarray
@@ -42,8 +41,6 @@ from ruler0 import Ruler
 
 X,Y = Ruler.X,Ruler.Y
 
-
-	
 class Draw(Ruler):
 	"""totally in z space"""
 	file_stub = 'select_draw_zoom/images/hsb'
@@ -81,7 +78,6 @@ class Draw(Ruler):
 		self.image.save(self.file_name)
 		in_window(-0.5,0,self.file_name,self.wo.win)
 		
-
 	def mandelbrot_parameters(self):
 		escape_radius = 1000
 		if self.depth==0: maximum_iterations = 20       # initial

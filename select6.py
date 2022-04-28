@@ -1,5 +1,6 @@
-# select3.py
-"""	select5 clean up and commit to git
+# select6.py
+"""	select6 builds on skeleton select wherre I demo how to recursively select regions
+	select5 clean up and commit to git
 	SelectSeries draw_whole draws initial state.  reorganize to Select
 	select 4c sequential process for xsel and zsel through zooms
 	select4b going back to pixel coord z-coord Transforms too confusing
@@ -26,6 +27,7 @@ from ruler0 import Ruler
 
 X,Y = Ruler.X,Ruler.Y
 zX,zY = Ruler.zX,Ruler.zY
+maxIt = 1000   # may need to change with multiple zooms
 
 def show_image_file(dp,label,win):  # from label symbol
 	file_name = Select.file_stub+str(dp) + '.png'
@@ -57,37 +59,6 @@ class Select(Ruler):
 		pt_win.win.setCoords(*self.zsel)   # coords of zsel
 		pt_win.win.getMouse()
 
-	def draw_image(self,dp,trxz):
-		"""draws part of image mapped by trxz from zsel onto gscreen"""
-		print(myself(),'trxz',trxz)
-		self.depth = dp
-		sp = 1
-		maxIt = 100   # may need to change with multiple zooms
-
-		self.image = PIL.Image.new('RGB', (X,Y), color = (255,255,255))
-		self.image.pixels = self.image.load() 
-
-		for x in range(0,X,sp):
-		 	for y in range(0,Y,sp):
-				 hue = mandelbrot(*trxz.world(x,y),maxIt)
-				 r,g,b = colorsys.hsv_to_rgb(hue,0.5,1)
-				 r,g,b = int(255*r),int(255*g),int(255*b)
-				 self.image.pixels[x,y] =  r,g,b
-				#  use for debugging coord systems
-				#  Point(*self.trxz.world(x,y)).draw(self.parent.woZ.win).setOutline(color_rgb(r,g,b))
-				#  Point(x,y).draw(self.parent.woX.win) 
-		self.save_show_window(dp,self.parent.woX.win)
-
-	def save_show_window(self,dp,win):
-		self.file_name = Select.file_stub+str(dp) + '.png'
-		if not hasattr(self,'image'): print('no image')
-		else:
-			self.image.save(self.file_name)
-			if win==self.parent.woX.win:
-				in_window(X/2,Y/2,self.file_name,self.parent.woX.win)
-			elif win==self.parent.woZ.win:
-				in_window(-0.5,0,self.file_name,self.parent.woZ.win)
-		
 	def select(self):
 		"""select box region with cursor  Confirm with ==> button"""
 		print(myself())
@@ -101,52 +72,11 @@ class Select(Ruler):
 			bx.undraw()
 			bx = rec_draw(self.xsel,self.parent.woX.win)
 			bx_drawn = True
-		# minimum coord corner of xsel
-		xdr = Select.xside2/20  # xside/10 = diameter
-		Circle(Point(self.xsel[0],self.xsel[1]),5).draw(self.parent.woX.win).setFill('darkgray')
-	
-	def draw_image(self,trxz):
-		"""draw selected region using transform and iteration"""
-		print(myself(),'trxz',trxz)
-		sp = 1
-		maxIt = 100
 
-		self.image = PIL.Image.new('RGB', (X,Y), color = (255,255,255))
-		self.image.pixels = self.image.load() 
-
-		for x in range(0,X,sp):
-		 	for y in range(0,Y,sp):
-				#  zx,zy = self.trxz.world(x,y)
-				 hue = mandelbrot(*trxz.world(x,Y-y),maxIt)
-				 r,g,b = colorsys.hsv_to_rgb(hue,0.5,1)
-				 r,g,b = int(255*r),int(255*g),int(255*b)
-				 self.image.pixels[x,y] =  r,g,b
-				#  for debugging
-				#  Point(*self.trxz.world(x,y)).draw(self.parent.woZ.win).setOutline(color_rgb(r,g,b))
-				#  Point(x,y).draw(self.parent.woX.win) 
-		# self.image.show()
-		print('')
-
-	def get_zsel(self):
-		if not hasattr(self,'zsel'):
-			self.zsel = Ruler.gzbox
-		self.trxz = Transform(X,Y,*self.zsel)
-
+	def	ztransform(self):
 		xsel = self.xsel
-		zsel = self.zsel = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
-		rec_draw(self.zsel,self.parent.woZ.win)
-		self.darkgray_circles()
-
-		zsel = self.zsel = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
-		self.trxz = Transform(X,Y,*self.zsel)
-	def xtransform_on_zsel(self):
-		print(myself())
-		zsel = self.zsel 
-		self.trxx = Transform(X,Y,*self.xsel)
-		self.zsel = self.trxx.world(zsel[0],zsel[1]) + self.trxx.world(zsel[2],zsel[3])
-		self.print_stats()
-		rec_draw(self.zsel,self.parent.woZ.win).setOutline('magenta')
-
+		self.zsel = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
+		self.parent.trxz = Transform(X,Y,*self.zsel)
 
 	def darkgray_circles(self):
 		xdr = Select.xside2/20 
@@ -155,8 +85,87 @@ class Select(Ruler):
 		Circle(Point(zsel[0],zsel[1]),zdr).draw(self.parent.woZ.win).setFill('darkgray')
 		Circle(Point(xsel[0],xsel[1]),xdr).draw(self.parent.woX.win).setFill('darkgray')
 
-	def print_stats(self):
-		print('\n',myself(),'---- depth',self.dp)
+	
+
+class SelectSeries(Ruler):
+
+	def __init__(self) -> None:
+		self.woZ = WindowObject('Z',X,Y)
+		self.woX = WindowObject('X',X,Y)
+		self.woC = WindowObject('C',X,Y)
+		self.zsel= Ruler.gzbox
+
+	def zoom_loop(self):
+		dp = 0
+		while True:
+			s = Select(self,dp)
+			s.select()
+			self.xsel = s.xsel
+			s.parent.get_zsel()
+			self.print_stats(dp)
+			self.bt.wait()
+
+			dp += 1
+			self.draw_image(dp,self.trxz)
+			self.save_show_window(dp,'X')
+			if dp >=1: self.save_show_window(dp,'C')
+			rec_draw(s.xsel,self.woC.win)
+
+			self.bt.draw()
+			self.bt.wait()
+
+
+
+	def get_zsel(self):
+		print(myself())
+		# grid((-3,-3,3,3),self.parent.woZ.win,1)
+		if not hasattr(self,'zsel'):
+			self.zsel = Ruler.gzbox
+		self.trxz = Transform(X,Y,*self.zsel)
+
+		xsel = self.xsel
+		zsel = self.zsel = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
+		rec_draw(self.zsel,self.woZ.win)
+
+		self.trxz = Transform(X,Y,*self.zsel)
+
+	def draw_image(self,dp,trxz):
+		"""draws part of image mapped by trxz from zsel onto gscreen"""
+		print(myself(),dp,'trxz',trxz)
+		self.depth = dp
+		sp = 1
+
+		self.image = PIL.Image.new('RGB', (X,Y), color = (255,255,255))
+		self.image.pixels = self.image.load() 
+
+		for x in range(0,X,sp):
+		 	for y in range(0,Y,sp):
+				 hue = mandelbrot(*trxz.world(x,y),maxIt)
+				 r,g,b = colorsys.hsv_to_rgb(hue,0.5,1)
+				 r,g,b = int(255*r),int(255*g),int(255*b)
+				 self.image.pixels[x,y] =  r,g,b
+				#  use for debugging coord systems
+				#  Point(*self.trxz.world(x,y)).draw(self.parent.woZ.win).setOutline(color_rgb(r,g,b))
+				#  Point(x,y).draw(self.parent.woX.win) 
+		pass
+
+	def save_show_window(self,dp,win):
+		print(myself(),win)
+		self.file_name = Select.file_stub+str(dp) + '.png'
+		if not hasattr(self,'image'): print('no image')
+		else:
+			self.image.save(self.file_name)
+			if win=='X':
+				in_window(X/2,Y/2,self.file_name,self.woX.win)
+			elif win=='Z':
+				in_window(-0.5,0,self.file_name,self.woZ.win)
+
+			elif win=='C':
+				self.file_name = Select.file_stub+str(dp-1) + '.png'
+				in_window(X/2,Y/2,self.file_name,self.woC.win)
+
+	def print_stats(self,dp):
+		print('\n',myself(),'---- depth',dp)
 		print('xsel',round_all(self.xsel,0))
 		print('zsel',round_all(self.zsel,4))
 		print('zside',round((self.zsel[1] - self.zsel[0]),4) )
@@ -164,13 +173,6 @@ class Select(Ruler):
 			print('trxz',self.trxz)
 		if hasattr(self,'trxx'):
 			print('trxx',self.trxx)
-
-class SelectSeries(Ruler):
-
-	def __init__(self) -> None:
-		self.woZ = WindowObject('Z',X,Y)
-		self.woX = WindowObject('X',X,Y)
-		self.zsel= Ruler.gzbox
 
 	def init_windows(self,dp):
 		"""shows initial state in both windows"""
@@ -189,19 +191,17 @@ class SelectSeries(Ruler):
 
 	def draw_whole(self):
 		sl = Select(self,0)
-		sl.xsel = Select.gscreen
-		sl.zsel = Select.gzbox
-		rec_draw(sl.xsel,sl.parent.woX.win).setWidth(10)
-		rec_draw(sl.zsel,sl.parent.woZ.win).setWidth(10)
+		self.xsel = Select.gscreen
+		self.zsel = Select.gzbox
+		rec_draw(self.xsel,self.woX.win).setWidth(10)
+		rec_draw(self.zsel,self.woZ.win).setWidth(10)
 
 		self.trxz = Transform(X,Y,*Ruler.gzbox)  # used for draw selection
-		sl.print_stats()
+		self.print_stats(0)
 
-		# sl.parent.woX.win.getMouse()
-		sl.draw_selection(self.trxz)
+		self.draw_image(0,self.trxz)
 
-
-	def select_series(self,dp):
+	def select_seriesx(self,dp):
 		# might use dp to start at arbitrary depth
 		self.dp = dp
 		self.init_windows(dp)
@@ -211,10 +211,6 @@ class SelectSeries(Ruler):
 			print(3*' = = =')
 			s = Select(self,dp)   # s is state, self is parent/select_series
 			s.select()  # select region by center
-			# confirm and exit on bt clicked
-
-			# zsel calc/draw
-			# grid((-3,-3,3,3),s.parent.woZ.win,1)
 			s.get_zsel()
 			dp += 1		
 			s.depth = dp 
@@ -243,12 +239,15 @@ if __name__ == "__main__":
 
 	# draw_state0()
 
+	
+
 
 	def zoom_sequence():
+		dp = 0
 		ss = SelectSeries()
-		ss.init_windows(1)
+		ss.init_windows(dp)
 		ss.init_button(ss.woX)
-		ss.select_series(1)
-
+		ss.zoom_loop()
+		
 	zoom_sequence()
 

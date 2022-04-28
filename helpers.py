@@ -13,8 +13,18 @@ def rec_draw(abox,win) :
     xa,ya,xb,yb =  abox
     return Rectangle(Point(xa,ya),Point(xb,yb)).draw(win)
 
+
+# def grid(crnLst,win,u):
+# 	xa,ya,xb,yb = crnLst
+# 	for i in range(xa,xb+1,u):
+# 		for j in range(ya,yb+1,u):
+# 			Rectangle(Point(i,j),Point(i+u,j+u)).draw(win)
+# 			# Text(Point(i-0.03*u,j-0.07*u),str(i)+', '+str(j)).draw(win).setSize(18)
+# 			Text(Point(i+0.15,j-0.07*u),str(i)+', '+str(j)).draw(win).setSize(18)
+
 def grid(crnLst,win,u):
 	xa,ya,xb,yb = crnLst
+	xa,xb = int(xa),int(xb)
 	for i in range(xa,xb+1,u):
 		for j in range(ya,yb+1,u):
 			Rectangle(Point(i,j),Point(i+u,j+u)).draw(win)
