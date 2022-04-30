@@ -1,5 +1,5 @@
 # select7.py
-"""	select7 zooming isn't quite accurate
+"""	select7 zooming seems accurate / upside down bug cured
 	select6 builds on skeleton select wherre I demo how to recursively select regions
 	select5 clean up and commit to git
 	SelectSeries draw_whole draws initial state.  reorganize to Select
@@ -66,6 +66,7 @@ class Select(Ruler):
 		bx = Circle(Point(0,0),1).draw(self.parent.woX.win)  #dummy for undraw
 		bx_drawn = False   	  				 # only dummy drawn
 		while True:
+			if bx_drawn: self.parent.bt.activate()
 			c = self.parent.woX.win.getMouse()
 			if self.parent.bt.clicked(c) and bx_drawn: break
 			self.cx,self.cy,self.wd = c.x,c.y,Ruler.xside2
@@ -95,13 +96,14 @@ class SelectSeries(Ruler):
 
 	def zoom_loop(self):
 		dp = 0
+		self.bt.deactivate()
 		while True:
 			s = Select(self,dp)
 			s.select()
+			self.bt.deactivate()
 			self.xsel = s.xsel
 			self.get_zsel()
 			self.print_stats(dp)
-			self.bt.wait()
 
 			dp += 1
 			self.draw_image(dp,self.trxz)
@@ -110,7 +112,8 @@ class SelectSeries(Ruler):
 			rec_draw(s.xsel,self.woC.win)
 
 			self.bt.draw()
-			self.bt.wait()
+			
+
 
 
 	def get_zsel(self):
@@ -119,9 +122,12 @@ class SelectSeries(Ruler):
 		if not hasattr(self,'zsel'):
 			self.zsel = Ruler.gzbox
 		self.trxz = Transform(X,Y,*self.zsel)
+		
 
 		xsel = self.xsel
-		zsel = self.zsel = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
+		xa,ya,xb,yb = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
+		self.zsel  = min(xa,xb),min(ya,yb),max(xa,xb),max(ya,yb)
+		
 		rec_draw(self.zsel,self.woZ.win)
 
 		self.trxz = Transform(X,Y,*self.zsel)
@@ -156,10 +162,12 @@ class SelectSeries(Ruler):
 				in_window(X/2,Y/2,self.file_name,self.woX.win)
 			elif win=='Z':
 				in_window(-0.5,0,self.file_name,self.woZ.win)
-
 			elif win=='C':
 				self.file_name = SelectSeries.file_stub+str(dp-1) + '.png'
 				in_window(X/2,Y/2,self.file_name,self.woC.win)
+
+		if win in ['X','C']:
+			self.origin_marker(win)
 
 	def print_stats(self,dp):
 		print('\n',myself(),'---- depth',dp)

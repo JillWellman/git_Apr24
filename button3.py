@@ -35,7 +35,7 @@ class Button:
 
 	def draw(self):
 		self.undraw()
-		print('button',myself())
+		# print('button',myself())
 		try: self.rect.draw(self.enclosing_win)
 		except:
 			GraphicsError

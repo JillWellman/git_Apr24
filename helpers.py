@@ -68,7 +68,7 @@ def mandelbrot(x,y,maxIt):
 	hue = (i/maxIt)
 	return hue
 	
-	r,g,b = colorsys.hsv_to_rgb(hue,1,1)
+	r,g,b = colorsys.hsv_to_rgb(hue,hue+0.01,1)
 	return  int(255*r),int(255*g),int(255*b)
 
 def mandelbrot_edges(x,y,maxIt):
