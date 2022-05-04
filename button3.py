@@ -30,7 +30,7 @@ class Button:
 		self.rect = Rectangle(p1,p2)
 		self.rect.setFill('lightgray')
 		self.label = Text(center, label)
-		self.label.setSize(22)
+		self.label.setSize(24)
 		self.deactivate()
 
 	def draw(self):

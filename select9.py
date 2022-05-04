@@ -84,7 +84,6 @@ class SelectSeries(Ruler):
 		self.implement()
 
 	def implement(self):
-	
 		dp = 0
 		self.init_windows(dp)
 		self.init_button(self.woX)
@@ -132,8 +131,6 @@ class SelectSeries(Ruler):
 		print(myself(),'trxz',trxz)
 		if SelectSeries.LIST: self.hueLst = []
 
-		
-		# self.depth = dp
 		sp = 1
 
 		start_time = time.time()
@@ -208,24 +205,10 @@ class SelectSeries(Ruler):
 	def init_button(self,win):
 		win = self.woX.win
 		self.bt = Button(win, Point( 460, 480), 70,30,'==>')
-		self.bt.label.setSize(24)
+		# self.bt.label.setSize(24)
 		self.bt.draw()
 		self.bt.activate()
 
-	# def draw_wholex(self):
-	# 	# sl = Select(self,0)
-	# 	self.draw_image(0,self.trxz)
-	# 	exit()
-	# 	self.xsel = Select.gscreen
-	# 	self.zsel = Select.gzbox
-	# 	self.trxz = Transform(X,Y,*Ruler.gzbox)  # used for draw selection
-
-	# 	self.draw_image(0,self.trxz)
-
-	# 	self.file_name = self.file_stub + '0.png'
-	# 	self.image.save(self.file_name)
-	# 	# show_image_file(0,'X',self.woX.win)
-	
 			
 
 if __name__ == "__main__":

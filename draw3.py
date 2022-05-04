@@ -22,6 +22,7 @@ import PIL
 import button3
 from window_object import WindowObject
 from helpers import *
+from mandelbrot_03 import MandelbrotSet
 
 # from git_Apr24.mandelbrot_03 import MandelbrotSet
 # from viewport import Viewport
@@ -86,7 +87,7 @@ class Draw(Ruler):
 		
 		return escape_radius, maximum_iterations
 
-	def draw_click_pointsx(self):
+	def draw_click_points(self):
 		for dp in range(5):
 			
 			if dp==0: 
@@ -145,10 +146,10 @@ if __name__ == "__main__":
 	zx,zy,wd =  -0.7435, 0.1314,2
 	wo = WindowObject('Z',X,Y)
 	dr = Draw(zx,zy,wd,wo,0)
-	# dr.draw_click_points()
+	dr.draw_pre_set_points()
 	
 
-	exit()
+	# exit()
 
 	
 
