@@ -5,9 +5,31 @@ sys.path.append (r'/Users/jillwellman_sept09_2012/Desktop/Python/myProjects/myMo
 from graphics import *
 from mygraphics import *
 import colorsys
+from ruler0 import Ruler
 
+maxIt = Ruler.maxIt
 
+# def pixel_accents(key,hue):
+# 	key in ['fast','slow','both']
+# 	if key=='fast' and hue < 0.5: r,g,b = 0,0,0  # black
+# 	elif key ='slow' and hue > 0.95: r,g,b = 40,30,30  # charcoal, redish gray
 
+def string_to_list(str):
+	str = str[1:-1]
+	lst = str.split(', ')
+	return(lst)
+	# hueLst = list(map(lambda l: float(l),lst))
+
+	print('list',lst)
+
+def count_frequency(my_list):
+	   count = {}
+	   for i in my_list:
+		   count[i] = count.get(i, 0) + 1
+	   return count
+
+def sci_not(num):
+	return f"{num:,}"
 
 def rec_draw(abox,win) :
     xa,ya,xb,yb =  abox
@@ -58,34 +80,7 @@ def min_corner(box):
 	xa,ya,xb,yb = box
 	return min(xa,xb),min(ya,yb)
 
-def mandelbrot(x,y,maxIt):
-	c = complex(x,y)
-	z = complex(0,0)
-	for i in range(maxIt):
-		if abs(z) > 2: break
-		# zn+1 = zn2 + c. 
-		z = z * z + c
-	hue = (i/maxIt)
-	return hue
-	
-	r,g,b = colorsys.hsv_to_rgb(hue,hue+0.01,1)
-	return  int(255*r),int(255*g),int(255*b)
 
-def mandelbrot_edges(x,y,maxIt):
-	c = complex(x,y)
-	z = complex(0,0)
-	for i in range(maxIt):
-		if abs(z) > 2: break
-		z = z * z + c
-	hue = i/maxIt
-	# grayscale through colorsys is more gradieated
-	# direct i to hue is pretty stark black and white
-	# r,g,b = colorsys.hsv_to_rgb(hue,1,1)
-	
-	if hue > 0.98:
-		gr = 255
-	else:
-		gr = int( 255*( 1 - hue ) )
-		# r,g,b = int(gr),int(gr),int(gr)
-	return gr, gr, gr
+
+
 

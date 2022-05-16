@@ -31,15 +31,13 @@ class Button:
 		self.rect.setFill('lightgray')
 		self.label = Text(center, label)
 		self.label.setSize(24)
-		self.deactivate()
+		# self.deactivate()
 
 	def draw(self):
 		self.undraw()
-		# print('button',myself())
 		try: self.rect.draw(self.enclosing_win)
 		except:
 			GraphicsError
-			# print('draw button error')
 		try: self.label.draw(self.enclosing_win)
 		except:
 			GraphicsError

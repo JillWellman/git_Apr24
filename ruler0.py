@@ -6,3 +6,5 @@ class Ruler():
 	gscreen = 0,Y,X,0
 	gzbox = -2,-1.5,1,1.5
 	xside2 = X/10
+
+	maxIt = 1000

@@ -7,9 +7,9 @@ print( pathlib.Path.cwd )
 print( pathlib.Path )
 
 
-dir_sdz = '../'
-
-
+dir_sdz = './data'
+# dir_sdz = './frequency_graphs/'
+print('/')
 
 def print_files(dir_name):
 	print()
