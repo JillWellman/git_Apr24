@@ -65,15 +65,15 @@ class HueGraph:
 		self.hueLst = hueLst
 		self.dp = dp
 		
-		# print(self.hueLst,len(hueLst))
 		self.hueDic = count_frequency(self.hueLst)
-		print('ncolors',len(self.hueDic))
+		self.ncolors = len(self.hueDic)
+		print('ncolors',self.ncolors)
 		# print(self.hueDic,len(self.hueDic))
-		self.key_numbers()
+		# self.key_numbers()
 
 		self.graph = sorted( list( self.hueDic.items())  )
+
 		self.data_bars()
-		
 		self.description()
 		self.axes()
 		return self.im
@@ -101,8 +101,15 @@ class HueGraph:
 			draw.line((x,Y-count)+(x,Y),fill=(r,g,b),width=1)
 			i += 1
 
+
+		lastbar = [x, log10(self.graph[-1][1])]
+		print('lastbar',lastbar)
+		xya = x,Y*y_unit
+		xyb = x,Y-lastbar[1]*y_unit
+		draw.line(xya + xyb, width=2,fill='magenta')
+	
+
 	def axes(self):
-		print(myself())
 		image_width = self.im.width
 
 		draw2 = PIL.ImageDraw.Draw(self.im)
@@ -113,7 +120,7 @@ class HueGraph:
 
 
 		y = log10(X*Y) # total pixels
-		draw2.line((self.x_offset,Y - y*Y/6) + (image_width,Y - y*Y/6),fill= 'magenta')  # one bar = total pixels
+		draw2.line((self.x_offset,Y - y*Y/6) + (image_width,Y - y*Y/6),fill= 'magenta',width=2)  # one bar = total pixels
 		line_label = str(round( y,2) )
 		draw2.text((self.x_offset,Y - y*Y/6), line_label,fill = 'blue')
 
@@ -131,6 +138,7 @@ class HueGraph:
 		max_hue_count = max(list(self.hueDic.values())) 
 		log_max_count = round(log10(max_hue_count),2)
 		max_hue_count = sci_not(max_hue_count)
+
 
 		draw.text((100,0),"State " + str(self.dp) + "   Number of Hues " + str(n_hues) \
 			+ "  Max hue count " + str(max_hue_count) + '    (' + str(log_max_count)+')' \
@@ -157,7 +165,7 @@ if __name__ == "__main__":
 		hg.im.show()
 
 
-	for dp in range(2):
+	for dp in range(9,10):
 		hueLst_to_display(dp)
 
 

@@ -67,7 +67,6 @@ class State(Ruler):
 		self.parent = parent
 		if self.parent.LIST: self.LIST = True
 
-
 	def select(self):
 		"""select box region with cursor  Confirm with ==> button
 		window in parent class"""
@@ -132,14 +131,14 @@ class State(Ruler):
 		self.graph_image.save(self.graph_image_filename)
 
 
-	def write_imagefile(self,image_object,filename):
+	def write_imagefilex(self,image_object,filename):
 		image_object.save(filename)
 
 	def write_textfile(self,text_object,text_filename):
 		with open(text_filename, 'w') as f:
 			f.write(str(text_object))
 
-	def write_graph_imagefile(self,graph_image,filename):
+	def write_graph_imagefilex(self,graph_image,filename):
 		graph_image.save(filename)
 	
 class StatePath(Ruler):
@@ -166,7 +165,6 @@ class StatePath(Ruler):
 		hg = HueGraph(dp,im.hueLst)
 
 		im = im.graph_image = hg.color_frequency_graph(dp,im.hueLst)
-		im.show()
 		im.graph_image_filename = 'data/graph_image_fileB' + str(dp) + '.png'
 		im.graph_image.save(im.graph_image_filename)
 
