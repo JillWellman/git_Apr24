@@ -27,10 +27,9 @@ stem = '/Users/jillwellman_sept09_2012/Desktop/Python/my-python-project/draw_zoo
 
 class HueGraph:
 
-	def __init__(self,dp,hueLst) -> None:
+	def __init__(self,dp) -> None:
 		self.dp = dp
-		self.hueLst = hueLst
-		
+
 	def get_hues_from_image(self,dp):
 		hueLst = []
 		imagefile = 'data/image_fileB' + str(dp) + '.png'
@@ -51,122 +50,123 @@ class HueGraph:
 		lst = [round(float(l),n) for l in lst]
 		return(lst)
 
-	def check_counts(self,dp):
-		print(sci_not(500*500), '500 squared')
-		print('hueLst length',sci_not(len(self.hueLst)))
-		print('10 exp5, top of graph, 10**5',sci_not(10**5))
+	def process_raw_file(self):
+		self.text_file = 'data/text_fileB'+str(self.dp) + ".txt"
+		with open(self.text_file,"r") as f:
+			hueStr = f.read()
+		lst = string_to_list(hueStr)
+		self.hueLst =  [float(l) for l in lst]
 
-	def key_numbers(self):
-		print('\nn_colors/width',len(self.hueDic))
-		print('max value / height', sci_not(max( list( self.hueDic.values() ))))
-
-
-	def color_frequency_graph(self,dp,hueLst):
-		self.hueLst = hueLst
-		self.dp = dp
-		
+	def color_frequency_graph(self):
+		# calc graph points
 		self.hueDic = count_frequency(self.hueLst)
-		self.ncolors = len(self.hueDic)
-		print('ncolors',self.ncolors)
-		# print(self.hueDic,len(self.hueDic))
-		# self.key_numbers()
+		self.n_hues = len(self.hueDic)
+		self.all_pixels = X*Y
 
 		self.graph = sorted( list( self.hueDic.items())  )
 
+		self.im = PIL.Image.new("RGB", (2*X,Y), (255, 255, 255))
+
 		self.data_bars()
 		self.description()
-		self.axes()
+
+		self.y_scale_labels()
+
+		# if __name__=='main': self.im.show()
+		
 		return self.im
 
+	
+		
+
 	def data_bars(self):
-		self.x_offset,self.y_offset = 35,15
-		self.extension = 300
-		y_unit = Y/6
-		x_unit = 500
-		
-		
-		self.im = PIL.Image.new("RGB", (self.extension+int(3.5*X)+self.x_offset,Y), (255, 255, 255))
 		draw = PIL.ImageDraw.Draw(self.im)
+		self.y_unit = Y/6
+		self.x_offset = 35
 
 		i = 0
-		# plotting values
+		vmax = 0
 		for (k,v) in self.graph:
-			count = y_unit*(log10(v))  # y coord
+			draw_pnt = self.y_unit*(log10(v))  # y coord
 			hue = k						# bar color
-			x = i						# x coord (2 pix/hue)
+			x = i						# x coord  does not equal hue, but count(hue)
 			x = self.x_offset + x
 
+			if i<10:
+				if v > vmax:
+					vmax = v
+				
 			r,g,b = colorsys.hsv_to_rgb(hue,1,1)
 			r,g,b = int(255*r),int(255*g),int(255*b)
-			draw.line((x,Y-count)+(x,Y),fill=(r,g,b),width=1)
+
+			draw.line((x,Y-draw_pnt)+(x,Y),fill=(r,g,b),width=1)
 			i += 1
+		print(self.dp,'vmax1',vmax, round( log10(vmax),2) )
+
+		# end of bars for interior pixels  last bar in graph
+
+		self.interior_pixels = v	
+		self.exterior_pixels = self.all_pixels - self.interior_pixels
 
 
-		lastbar = [x, log10(self.graph[-1][1])]
-		print('lastbar',lastbar)
-		xya = x,Y*y_unit
-		xyb = x,Y-lastbar[1]*y_unit
-		draw.line(xya + xyb, width=2,fill='magenta')
-	
 
-	def axes(self):
+		# print(self.all_pixels,self.interior_pixels,self.exterior_pixels)
+		draw.line((x,Y) + (x,Y-draw_pnt), width=3,fill=Ruler.interior)  #interior bar in graph
+
+		# line for all_pixels ht in graph
+		wd = self.im.width
+		y = Y-self.y_unit*(log10(X*Y))
+		draw.line((0,y)+(wd,y),fill=Ruler.interior, width=2)
+
+		draw.line((self.x_offset-5,0)+(self.x_offset-5,Y),fill='black')  # mark zero point
+
+	def y_scale_labels(self):
 		image_width = self.im.width
 
-		draw2 = PIL.ImageDraw.Draw(self.im)
+		draw = PIL.ImageDraw.Draw(self.im)
 		font = ImageFont.load_default().font
-		font = ImageFont.truetype("Verdana.ttf",24)
-		
+		font = ImageFont.truetype("Verdana.ttf",14)
 
-
-
-		y = log10(X*Y) # total pixels
-		draw2.line((self.x_offset,Y - y*Y/6) + (image_width,Y - y*Y/6),fill= 'magenta',width=2)  # one bar = total pixels
-		line_label = str(round( y,2) )
-		draw2.text((self.x_offset,Y - y*Y/6), line_label,fill = 'blue')
-
-		draw2.line((self.x_offset,0)+(self.x_offset,Y),fill='black')  # mark zero point
+		draw.line((self.x_offset,0)+(self.x_offset,Y),fill='black')  # mark zero point
 		# y axis labels
 		for i in range(7):
-			draw2.text((self.x_offset-10, Y-i*Y/6), str(i),fill='black')
+			draw.text((self.x_offset-10, Y-i*Y/6), str(i),fill='black')
+
 
 	def description(self):
 		draw = PIL.ImageDraw.Draw(self.im)
 		font = ImageFont.load_default().font
-		font = ImageFont.truetype("Verdana.ttf",24)
+		font = ImageFont.truetype("Verdana.ttf",18)
 
-		n_hues = sci_not( len(self.hueDic) )
-		max_hue_count = max(list(self.hueDic.values())) 
-		log_max_count = round(log10(max_hue_count),2)
-		max_hue_count = sci_not(max_hue_count)
+		self.exterior_pixels = self.all_pixels - self.interior_pixels
+		
+		loginterior = round( log10(self.interior_pixels), 1)
+		logexterior = round( log10(self.exterior_pixels), 1)
 
-
-		draw.text((100,0),"State " + str(self.dp) + "   Number of Hues " + str(n_hues) \
-			+ "  Max hue count " + str(max_hue_count) + '    (' + str(log_max_count)+')' \
+		draw.text((50,10),"State " + str(self.dp) + "   # Hues " + str(self.n_hues) \
+			+ "  # Pixels:  Total " + sci_not(self.all_pixels) + ' (5.4)  Exterior ' \
+			       + str(sci_not(self.exterior_pixels)) + '   (' + str(logexterior)\
+			+ ")  Interior " + str(sci_not(self.interior_pixels)) + '   (' + str(loginterior) +')'  \
 			,(0,0,0),font=font)
 
-		y = log10(X*Y)
-		line_label = str(round(y ,2) )
-		draw.text((self.x_offset,Y - y*Y/6), line_label,fill = 'magenta')
+		
 
+		# if __name__=="name": 
+		# 	self.im.show()
+		# 	exit()
 
 		
 if __name__ == "__main__":	
 
 	def hueLst_to_display(dp):
-		# img = PIL.Image.open('data/graph_image_fileB'+str(dp) + '.png')
-		# img.show()
-		hue_text_file = 'data/text_fileB'+str(dp) + ".txt"
-		with open(hue_text_file,"r") as f:
-			hueStr = f.read()
-		lst = string_to_list(hueStr)
-		hueLst = [float(l) for l in lst]
-		hg = HueGraph(dp,hueLst)
-		hg.color_frequency_graph(dp,hueLst)
+		hg = HueGraph(dp)
+		hg.process_raw_file()
+		hg.color_frequency_graph()
 		hg.im.show()
 
-
-	for dp in range(9,10):
+	for dp in range(2,10):
 		hueLst_to_display(dp)
+
 
 
 

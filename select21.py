@@ -61,6 +61,8 @@ maxIt = Ruler.maxIt  # may need to change with multiple zooms
 
 
 class State(Ruler):
+	gzbox = -2,-1.5,1,1.5
+	gscreen = 0,Y,X,0
 	
 	def __init__(self,parent,dp) -> None:
 		self.dp = dp
@@ -103,9 +105,11 @@ class State(Ruler):
 		for x in range(0,X,sp):
 			if x==0:print('.',end='')
 			for y in range(0,Y,sp):
-				
 				hue,r,g,b = mn.mandelbrot(*trxz.world(x,y),maxIt)
-				self.image.pixels[x,y] = r,g,b
+				if abs(hue - 1) < 0.01: 
+					self.image.pixels[x,y] = Ruler.interior
+				else:
+					self.image.pixels[x,y] = r,g,b
 				if self.parent.LIST: 
 					self.hueLst.append(hue)
 
@@ -145,64 +149,64 @@ class StatePath(Ruler):
 	LIST = True
 
 	def __init__(self) -> None:
-		self.woG = WindowObject('G',2*X + 50, Y)
+		self.woG = WindowObject('G',3*X,Y)
+		self.woG.draw()
 
 	def zoom_loop(self):
-		
-		# initial state
+		# create state_path
 		dp = 0
-		ip = StatePath()   #string of states in the run
 		self.x_offset,self.y_offset = 100,20
-		# initial state
-		im = State(ip,dp)  # creates State object with parent ip which holds the Transform
-		if dp==0: ip.trxz = Transform(X,Y,*StatePath.gzbox)
+		ip = StatePath()   #string of states in the run
 
 		# create initial state
-		im.draw_image(dp,ip.trxz)
-		im.store_image_and_text(dp)
-		in_window(X/2,Y/2,im.image_filename,ip.woG.win)
+		im = State(ip,dp)  # creates State object with parent ip which holds the Transform
+		ip.zoom_draw_display(im,dp)
 
-		hg = HueGraph(dp,im.hueLst)
 
-		im = im.graph_image = hg.color_frequency_graph(dp,im.hueLst)
-		im.graph_image_filename = 'data/graph_image_fileB' + str(dp) + '.png'
-		im.graph_image.save(im.graph_image_filename)
+		# ip.trxz = Transform(X,Y,*StatePath.gzbox)
+		# im.draw_image(dp,ip.trxz)
+		# im.store_image_and_text(dp)
+		# in_window(X/2,Y/2,im.image_filename,ip.woG.win)
 
-		wd = self.woG.win.width 
-		wd_graph = wd - X
-		in_window(2*X + wd_graph/2,Y/2,im.graph_image_filename,ip.woG.win)
+		# create draw display graph
+		hg = HueGraph(dp)
+
+		im.graph_image = hg.color_frequency_graph(dp,im.hueLst)
+		# im.graph_image_filename = 'data/graph_image_fileB' + str(dp) + '.png'
+		# im.graph_image.save(im.graph_image_filename)
+
+		# wd = self.woG.win.width 
+		# wd_graph = wd - X
+		# in_window(2*X + wd_graph/2,Y/2,im.graph_image_filename,ip.woG.win)
 
 		ip.bt = Button(ip.woG.win,Point(X - 50,Y - 30),60,30,'==>')
 		ip.bt.draw()
 
 		dp = 1
 		while True:  # loop over remaining states
-			im = State(ip,dp)   # after init
 			ip.bt.deactivate()
-			# SELECT
-			if dp==0: ip.trxz = Transform(X,Y,*StatePath.gzbox)
-			else: im.select()
+			im = State(ip,dp)   # new state im
 
-			# ZOOM
-			ip.zsel_transform()
-			# ip.print_stats(dp)
-			
-			# STORE AND DRAW
-			im.draw_image(dp,ip.trxz)
-			im.store_image_and_text(dp)
-			in_window(X/2,Y/2,im.image_filename,ip.woG.win)
-
+			im.select()
+			ip.zoom_draw_display(im,dp)
+	
+			# create,store, display graph
 			hg = HueGraph(dp,im.hueLst)
-			im = im.graph_image = hg.color_frequency_graph(dp,im.hueLst)
-			# im.show()
-			im.graph_image_filename = 'data/graph_image_fileB' + str(dp) + '.png'
-			im.graph_image.save(im.graph_image_filename)
+			im.graph_image = hg.color_frequency_graph()
+			# # im.show()
+			# im.graph_image_filename = 'data/graph_image_fileB' + str(dp) + '.png'
+			# im.graph_image.save(im.graph_image_filename)
 
-			in_window(2*X + wd_graph/2,Y/2,im.graph_image_filename,ip.woG.win)
-
+			# in_window(2*X + wd_graph/2,Y/2,im.graph_image_filename,ip.woG.win)
 
 			ip.bt.draw()
 			dp += 1
+
+	def zoom_draw_display(ip,im,dp):
+		ip.zsel_transform()
+		im.draw_image(dp,ip.trxz)
+		im.store_image_and_text(dp)
+		in_window(X/2,Y/2,im.image_filename,ip.woG.win)
 
 	def zsel_transform(self):
 		"""comes from two states bounding transition"""
@@ -210,7 +214,8 @@ class StatePath(Ruler):
 		if not hasattr(self,'zsel'):
 			self.zsel = Ruler.gzbox
 		self.trxz = Transform(X,Y,*self.zsel)
-	
+		if not hasattr(self,'xsel'):
+			self.xsel = Ruler.gscreen
 		xsel = self.xsel  # created in state.select
 		xa,ya,xb,yb = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
 		self.zsel  = min(xa,xb),min(ya,yb),max(xa,xb),max(ya,yb)

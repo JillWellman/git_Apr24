@@ -20,8 +20,9 @@ class WindowObject(Ruler):
 	def __init__(self,label,w,h):
 		self.label = label
 		self.w,self.h = w,h
+		self.name = 'win' + self.label
 		self.label_list.append(self.label)
-		self.implement()
+		# self.implement()
 
 	def draw(self):
 		self.win = GraphWin(self.name,self.w,self.h)
@@ -29,15 +30,12 @@ class WindowObject(Ruler):
 	def implement(self):
 		self.name = 'win' + self.label
 		#need to make graphics win to hold some attributes of windowObject
-		if self.label=='G':
-			self.w = 3.5*X
-			self.win = GraphWin(self.name,self.w,self.h)  # win attrute is GraphWin
-		else:
-			self.win = GraphWin(self.name,self.w,self.h)  # win attrute is GraphWin
-			self.dtpl = (self.w,self.h)
+		self.draw()
+		# self.win = GraphWin(self.name,self.w,self.h)  # win attrute is GraphWin
+		self.dtpl = (self.w,self.h)
 
 		if self.label=='G':
-			self.dtpl = (self.w,self.h)
+			self.dtpl = (3*X,Y)
 		elif self.label=='X':
 			self.ctpl = Ruler.gscreen
 			self.win.setCoords(*self.ctpl)
@@ -64,12 +62,13 @@ if __name__=='__main__':
 
 	labels = ['G','X','C','Z']
 	for label in labels:
-		wo = WindowObject(label,X,Y)
-		# if self.label=='G':
-		# 	wo = WindowObject(label,2*X+20,Y)
-		# else:
-		# 	wo = WindowObject(label,X,Y)
-		# wo.name = 'win' + str(label)
+		if label=='G':
+			wo = WindowObject(label,3.5*X,Y) # window width on laptop
+		else:
+			wo = WindowObject(label,X,Y)
+		wo.name = 'win' + str(label)
+
+		wo.win = GraphWin(wo.name,wo.w,wo.h)
 
 		# if label=='C': grid((0,0,X,Y),wo.win,100)
 		# elif label=='Z': grid((-3,-3,3,3),wo.win,1)

@@ -7,4 +7,5 @@ class Ruler():
 	gzbox = -2,-1.5,1,1.5
 	xside2 = X/10
 
+	interior = (255,0,50)
 	maxIt = 1000
