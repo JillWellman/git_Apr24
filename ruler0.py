@@ -9,3 +9,5 @@ class Ruler():
 
 	interior = (255,0,50)
 	maxIt = 1000
+
+	winX,winY = (3.5*X,2*Y)  # fills width of laptop
