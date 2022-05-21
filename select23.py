@@ -1,5 +1,7 @@
-# select22.py
-"""	select 22 shows image and graph. Returns center and magnification
+# select23.py
+"""	23 move draw_object and related into helper (maybe mandelbrot)
+		so that others can use it -- all it needs is location
+	select 22 shows image and graph. Returns center and magnification
 	select22 works with histogram22.  used for movie
 	select21 copied from working 19  numerical summaries for histograms
 	select19 froze 18, now cleaning and checking and enjoying

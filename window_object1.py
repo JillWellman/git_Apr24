@@ -25,17 +25,10 @@ class WindowObject(Ruler):
 			self.dtpl = (3.5*X,Y)
 		else:
 			self.dtpl = (X,Y)
-
-	def draw(self):
-		w,h = self.dtpl
-		self.win = GraphWin(self.name,w,h)
+		# when you make a wo, the window is drawn
+		self.win = GraphWin(self.name,*self.dtpl)
 
 	def implement(self):
-		self.name = 'win' + self.label
-		#need to make graphics win to hold some attributes of windowObject
-		# self.draw()
-		# self.win = GraphWin(self.name,self.w,self.h)  # win attrute is GraphWin
-
 		if self.label=='G':
 			self.dtpl = (3*X,Y)
 		elif self.label=='X':

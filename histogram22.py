@@ -23,7 +23,6 @@ import inspect
 myself = lambda: inspect.stack()[1][3]       
 
 X,Y = Ruler.X,Ruler.Y
-stem = '/Users/jillwellman_sept09_2012/Desktop/Python/my-python-project/draw_zoom_may5/'
 
 
 class HueGraph:
@@ -160,7 +159,7 @@ class Viewer(WindowObject):
 	def __init__(self, label):
 		super().__init__(label)
 
-	def create(self):
+	def createx(self):
 		# all inherited from windowObject  see tutorial
 		vw.draw()
 
@@ -192,29 +191,29 @@ class Viewer(WindowObject):
 		
 
 if __name__ == "__main__":
-	vw = Viewer('G')
-	vw.create()	
-	dp = 2
-	while True:
-		vw.show_image_file(dp)
-		vw.show_graph_file(dp)
+	
+	if True:
+		# views sequence of image and graph images with annotations
+		vw = Viewer('G')
+		dp = 4
+		while True:
+			vw.show_image_file(dp)
+			vw.show_graph_file(dp)
 
-		clk = vw.win.getMouse()
-		if clk.x < X: dp -= 1
-		elif clk.x > X: dp += 1
+			clk = vw.win.getMouse()
+			if clk.x < X: dp -= 1
+			elif clk.x > X: dp += 1
 
+	else:
+		# draws graph from hueLst
+		def hueLst_to_display(dp):
+			hg = HueGraph(dp)
+			hg.process_raw_file()
+			hg.color_frequency_graph()
+			hg.im.show()
 
-
-	exit()
-
-	def hueLst_to_display(dp):
-		hg = HueGraph(dp)
-		hg.process_raw_file()
-		hg.color_frequency_graph()
-		hg.im.show()
-
-	for dp in range(4,5):
-		hueLst_to_display(dp)
+		for dp in range(4,5):
+			hueLst_to_display(dp)
 
 
 
