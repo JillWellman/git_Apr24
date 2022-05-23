@@ -2,6 +2,9 @@ import sys
 sys.path.append (r'/Users/jillwellman_sept09_2012/Desktop/Python/my-python-project/myImports')
 sys.path.append (r'/Users/jillwellman_sept09_2012/Desktop/Python/myProjects/myModules')
 
+import PIL
+import PIL.Image
+
 from graphics import *
 from mygraphics import *
 import colorsys
@@ -9,10 +12,16 @@ from ruler0 import Ruler
 
 maxIt = Ruler.maxIt
 
-# def pixel_accents(key,hue):
-# 	key in ['fast','slow','both']
-# 	if key=='fast' and hue < 0.5: r,g,b = 0,0,0  # black
-# 	elif key ='slow' and hue > 0.95: r,g,b = 40,30,30  # charcoal, redish gray
+
+
+
+def inside(clk,box):
+	cx,cy = clk
+	xa,ya,xb,yb = box
+	return xa < cx < xb and ya < cy < yb
+
+
+
 
 def string_to_list(str):
 	str = str[1:-1]
