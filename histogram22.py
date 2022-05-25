@@ -2,10 +2,6 @@
 # histogram20.py new graph type so each color has its own bar
 
 from math import log10
-from modulefinder import LOAD_CONST
-from re import T
-from unittest.mock import PropertyMock
-
 import numpy as np
 import colorsys  
 from PIL import ImageDraw,ImageFont
@@ -28,8 +24,10 @@ X,Y = Ruler.X,Ruler.Y
 
 class HueGraph:
 
-	def __init__(self,dp) -> None:
+	def __init__(self,directory,dp) -> None:
 		self.dp = dp
+		self.directory = directory
+		# self.data_file_stem = 'data/0525_' 
 		self.process_raw_file()
 
 	def get_hues_from_image(self,dp):
@@ -53,7 +51,8 @@ class HueGraph:
 		return(lst)
 
 	def process_raw_file(self):
-		self.text_file = 'data/text_fileB'+str(self.dp) + ".txt"
+		file_stem + self.directory + 'txt_file'
+		self.text_file = file_stem + str(self.dp) + ".txt"
 		with open(self.text_file,"r") as f:
 			hueStr = f.read()
 		lst = string_to_list(hueStr)
@@ -190,32 +189,34 @@ class Viewer(WindowObject):
 			dp += 1
 
 class Menu(WindowObject):
-	def __init__(self, label,seq):
+	def __init__(self, label,directory):
 		self.label = label
-		self.seq = seq
+		self.directory = directory
 		super().__init__(label)
 
-	# @property
-	def image_file(self,seq,typ):
+	@property
+	def data_file_directoryx(self,seq):
 		if seq==0:
-			dir = 'data/sequence_baby_mand'
+			directory = 'data/sequence_baby_mand'
 		elif seq==1:
-			dir = 'data/movie_sequence' 
+			directory = 'data/movie_sequence' 
 		elif seq==2:
-			dir = 'data/varied_path'
+			directory = 'data/varied_path'
+		elif seq==3:
+			directory = '0525'
+		return directory
+	
+	@property
+	def image_file_name_stemx(typ):
 		if typ=='image':
-			ext = '/image_fileB'
+			stem = '/ifile_'
 		elif typ=='tnail':
-			ext = '/thumb'
-		else:
-			ext = '/thumb'
-		stem = dir + ext
-		return stem, dir
-
+			stem = '/tfile_'
+		return stem
 
 	def place_tnails(self):
 		self.win.setCoords(-0.5,-0.5,3.5,4.5)
-		stem,dir = self.image_file(1,'thumb')
+		directory= self.data_file_directory(3)
 		for p in range(len(self.fLst)):
 			thfile = stem + str(p+2) + '.png'
 			print(thfile)
@@ -240,7 +241,7 @@ class Menu(WindowObject):
 				j,i = 4 - p//4, p%4
 				if abs(cx-i) < 0.3 and abs(cy-j) < 0.3:
 					ci.setFill('cyan')
-					imfile = image_file(self.seq,'tnail')
+					imfile = self.image_file(1,'tnail')
 					print(p+2,imfile)
 					return imfile
 
@@ -249,23 +250,19 @@ class Menu(WindowObject):
 		for f in os.listdir(dir_name):
 			if f.startswith('image_file'):
 				self.fLst.append(f)
-		print(self.fLst)
 
 	def make_thumbnail(self,dp):
-		# self.dir = self.dir1
-		self.imfile = self.image_file(1,'tnail')
-		if hasattr(self,'thfile'):
+		if hasattr(self,'tnail'):
 			return
-		
 		try: 
-			img = PIL.Image.open(self.imfile)
+			img = PIL.Image.open(self.tnail)
 		except:
 			FileNotFoundError
 			return
 		
-		self.thfile = self.dir + self.thext + str(dp) + '.png'
+		self.tnail = self.directory + '/tfile' + str(dp) + '.png'
 		img.thumbnail((100,100))
-		img.save(self.thfile)
+		img.save(self.tnail)
 
 	def interact(self):
 		# self.dir =self.dir1
@@ -274,14 +271,14 @@ class Menu(WindowObject):
 			m.vw.show_image_file(imfile)
 
 if __name__ == "__main__":
-	m = Menu('M',1)
-	m.vw = Viewer('X')
+	m = Menu('M','data/movie_sequence')  # 3 is 0525
+	# m.vw = Viewer('X')
 	# m.sequence_files()
 	m.file_list('data/movie_sequence')  
 	for dp in range(len(m.fLst)):
 		m.make_thumbnail(dp)
-	m.place_tnails()
-	m.interact()  # select then show
+	# m.place_tnails()
+	# m.interact()  # select then show
 
 
 

@@ -69,11 +69,9 @@ class State(Ruler):
 	def __init__(self,parent,dp) -> None:
 		self.dp = dp
 		self.parent = parent
-		# if self.parent.LIST: self.LIST = True
+		self.write_directory= self.parent.write_directory
+		self.read_directory= self.parent.read_directory
 		
-		"""record center and side2 
-		with mandelbrot allows state replication"""
-
 	def select(self):
 		"""select box region with cursor  Confirm with ==> button
 		window in parent class"""
@@ -96,7 +94,7 @@ class State(Ruler):
 		# print('   ',myself(),dp)
 		if State.LIST: self.hueLst = []
 		self.depth = dp
-		sp = 1
+		sp = 2
 
 		self.image = PIL.Image.new('RGB', (X,Y), color = (255,255,255))
 		self.image.pixels = self.image.load() 
@@ -117,10 +115,8 @@ class State(Ruler):
 
 		elapsed_time = time.time() - start_time
 
-		self.parent.data_string = self.parent.data_string + ',' + str(elapsed_time)
-		print(self.parent.data_string)
-		with open('file.txt', 'a') as f:
-			f.write(self.parent.data_string + '\n')
+		# data_string = self.path_loc + ',' + str(elapsed_time)
+		
  
 	def create_image_from_location(self):
 		dp = 3 
@@ -134,20 +130,22 @@ class State(Ruler):
 		self.store_image_and_text(dp)
 		in_window(X/2,Y/2,self.image_filename,self.parent.wo.win)
 		
+	def write_location_string(self):
+		with open(self.loc_file, 'a') as f:  
+			f.write(self.loc_data+ '\n')
+
 	def store_image_and_text(self,dp):
-		self.txfile = 'data/0523_' + str(dp) + '.txt'
-		with open(self.tfile, 'w') as f:
-			f.write(str(self.hueLst))
+		self.txfile = self.parent.write_directory + '/txfile_' + str(dp) + '.txt'
+		if dp==0:
+			with open(self.txfile, 'w') as f:
+				f.write(str(self.hueLst))
+		else:
+			with open(self.txfile, 'a') as f:	
+				f.write(str(self.hueLst))
 
 		# store_image(filename,save,image_name)
-		self.ifile = 'data/0523_' + str(dp) + '.png'
+		self.ifile = self.parent.write_directory + '/ifile_' + str(dp) + '.png'
 		self.image.save(self.ifile)
-
-	
-
-	
-
-
 
 	# -----------------------
 	def draw_graph(self,dp,hueLst):
@@ -161,14 +159,20 @@ class State(Ruler):
 	
 
 class StatePath(Ruler):
-	GRAPH = True  # Flag for doing graphs  
+	GRAPH = False  # Flag for doing graphs  
 	LIST = True  # flag for writing hueLst
 	# x_offset,y_offset = 100,20
 
-	def __init__(self,label) -> None:
+
+	def __init__(self,label,read_directory,write_directory,loc_data) -> None:
 		self.wo = WindowObject(label)
-		with open('file.txt', 'w') as f:
-			f.write('')
+		self.read_directory = read_directory
+		self.write_directory = write_directory
+		self.write_directory
+		self.ldata_file = self.write_directory+'/loc_data.txt'
+
+
+		
 
 	def zoom_loop(self):
 		dp = 0
@@ -194,47 +198,52 @@ class StatePath(Ruler):
 			dp += 1
 
 	def graph_state(self,st,dp):
-		hg = HueGraph(dp)
+		hg = HueGraph(1,dp)
 		st.graph_image = hg.color_frequency_graph()
-		st.graph_image_filename = 'data/graph_image_fileB' + str(dp) + '.png'
+		st.graph_image_filename = 'data/0523_' + str(dp) + '.png'
 		st.graph_image.save(st.graph_image_filename)
 
 		# wd_graph = st.graph_image.width
 		# wd_win = self.wo.win.width
 		in_window(2.25*X,Y/2,st.graph_image_filename,self.wo.win)
 
-	def zoom_draw_display(self,im,dp):
-		self.zsel_transform(dp)
-		im.draw_image(self.trxz,dp)
-		im.store_image_and_text(dp)
-		in_window(X/2,Y/2,im.image_filename,self.wo.win)
+	def zoom_draw_display(self,st,dp):
+		self.zsel_transform(st,dp)
+		st.draw_image(st.trxz,dp)
+		st.store_image_and_text(dp)
+		in_window(X/2,Y/2,st.ifile,self.wo.win)
 
-	def zsel_transform(self,dp):
+	def zsel_transform(self,st,dp):
 		"""comes from two states bounding transition"""
 
-		if not hasattr(self,'zsel'):
-			self.zsel = Ruler.gzbox
-		self.trxz = Transform(X,Y,*self.zsel)
-		if not hasattr(self,'xsel'):
-			self.xsel = Ruler.gscreen
-		xsel = self.xsel  # created in state.select
-		xa,ya,xb,yb = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
-		self.zsel  = min(xa,xb),min(ya,yb),max(xa,xb),max(ya,yb)
-		# print('\nzsel',self.zsel)
+		if not hasattr(st,'zsel'):
+			st.zsel = Ruler.gzbox
+		st.trxz = Transform(X,Y,*st.zsel)
+		if not hasattr(st,'xsel'):
+			st.xsel = Ruler.gscreen
+		xsel = st.xsel  # created in state.select
+		zxa,zya,zxb,zyb = st.trxz.world(xsel[0],xsel[1]) + st.trxz.world(xsel[2],xsel[3])
+		st.zsel  = min(zxa,zxb),min(zya,zyb),max(zxa,zxb),max(zya,zyb)
 		
 		# use for upcoming draw image
-		self.trxz = Transform(X,Y,*self.zsel)
-		self.trzz = Transform(3,3,*self.zsel)
-
+		st.trxz = Transform(X,Y,*st.zsel)
+		st.trzz = Transform(3,3,*st.zsel)
 		# coords
-		zxa,zya,zxb,zyb = self.zsel
+		
+
+
+		zxa,zya,zxb,zyb = st.zsel
 		width = zxb-zxa
 		cx,cy = (zxa + zxb)/2 , (zya + zyb)/2 
-		self.data_string = str(dp) + ','+ str(cx) + ',' + str(cy) + ',' + str(width)
+		st.loc_data = str(dp) + ','+ str(cx) + ',' + str(cy) + ',' + str(width)
+		
+
+		with open(self.ldata_file,"a") as f:
+			print(st.loc_data)
+			f.write('\n'+st.loc_data)
+			# f.write('\n'+s)
 
 	
-
-
 	def print_stats(self,dp):
 		print('\n',myself(),'---- depth',dp)
 		print('xsel',round_all(self.xsel,0))
@@ -245,7 +254,6 @@ class StatePath(Ruler):
 			print('trxz',self.trxz)
 		if hasattr(self,'trxx'):
 			print('trxx',self.trxx)
-
 
 	def init_button(self,win):
 		self.bt = Button(win, Point( 460, 480), 70,30,'==>')
@@ -333,6 +341,7 @@ if __name__ == "__main__":
 
 		sp.wo.win.getMouse()
 	else:
-		sp = StatePath('G')
+		path_loc_file = 'data/0523' + '/path_locations' + '.txt'
+		sp = StatePath('X','data/0523','data/0525',path_loc_file)
 		sp.zoom_loop()
 
