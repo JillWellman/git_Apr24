@@ -71,6 +71,10 @@ def grid_labels(box,win):
 		Text( Point((xa+xb)/2,ya), str(round(ya,2))).draw(win).setSize(18)
 		Text( Point((xa+xb)/2,yb), str(round(yb,2))).draw(win).setSize(18)
 
+def window_location(win,w,h,x,y):
+    win.master.geometry( '%dx%d+%d+%d' % (w, h, x, y) )
+
+
 
 def box_from_center(cx,cy,w):
 	xa,ya,xb,yb = cx-w,cy-w,cx+w,cy+w
@@ -88,6 +92,10 @@ def round_all(lst,n):
 def min_corner(box):
 	xa,ya,xb,yb = box
 	return min(xa,xb),min(ya,yb)
+
+def in_window(cx,cy,file,wind):
+    imW = gImage(Point(cx,cy),file)
+    imW.draw(wind)
 
 
 

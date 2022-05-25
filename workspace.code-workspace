@@ -4,7 +4,7 @@
 			"path": "."
 		},
 		{
-			"path": "../frequency_graphs"
+			"path": "../../myProjects/myModules"
 		}
 	],
 	"settings": {}

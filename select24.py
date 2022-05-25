@@ -64,6 +64,7 @@ maxIt = Ruler.maxIt  # may need to change with multiple zooms
 class State(Ruler):
 	gzbox = -2,-1.5,1,1.5
 	gscreen = 0,Y,X,0
+	LIST = True
 	
 	def __init__(self,parent,dp) -> None:
 		self.dp = dp
@@ -93,11 +94,8 @@ class State(Ruler):
 
 	def draw_image(self,trxz,dp):
 		# print('   ',myself(),dp)
-		self.hueLst = []
-		"""draws part of image mapped by trxz from zsel onto gscreen"""
+		if State.LIST: self.hueLst = []
 		self.depth = dp
-		if trxz==None:
-			trxz = self.parent.trxz
 		sp = 1
 
 		self.image = PIL.Image.new('RGB', (X,Y), color = (255,255,255))
@@ -115,11 +113,15 @@ class State(Ruler):
 					self.image.pixels[x,y] = Ruler.interior
 				else:
 					self.image.pixels[x,y] = r,g,b
-				self.hueLst.append(hue)
+				if State.LIST: self.hueLst.append(hue)
 
 		elapsed_time = time.time() - start_time
-		# print('elapsed time',round(elapsed_time,3))
 
+		self.parent.data_string = self.parent.data_string + ',' + str(elapsed_time)
+		print(self.parent.data_string)
+		with open('file.txt', 'a') as f:
+			f.write(self.parent.data_string + '\n')
+ 
 	def create_image_from_location(self):
 		dp = 3 
 		# cx,cy,dw = 0.34649107183915934, -0.37546362183256504, 0.02419296385348313
@@ -131,17 +133,21 @@ class State(Ruler):
 		self.draw_image(trxz,dp)
 		self.store_image_and_text(dp)
 		in_window(X/2,Y/2,self.image_filename,self.parent.wo.win)
-
 		
 	def store_image_and_text(self,dp):
-		# store_text (filename,write,hueLst)
-		self.text_filename = 'data/text_fileB' + str(dp) + '.txt'
-		with open(self.text_filename, 'w') as f:
+		self.txfile = 'data/0523_' + str(dp) + '.txt'
+		with open(self.tfile, 'w') as f:
 			f.write(str(self.hueLst))
 
 		# store_image(filename,save,image_name)
-		self.image_filename = 'data/image_fileB' + str(dp) + '.png'
-		self.image.save(self.image_filename)
+		self.ifile = 'data/0523_' + str(dp) + '.png'
+		self.image.save(self.ifile)
+
+	
+
+	
+
+
 
 	# -----------------------
 	def draw_graph(self,dp,hueLst):
@@ -152,73 +158,54 @@ class State(Ruler):
 		self.graph_image_filename = 'data/graph_image_fileB' + str(dp) + '.png'
 		self.graph_image.save(self.graph_image_filename)
 
+	
+
 class StatePath(Ruler):
 	GRAPH = True  # Flag for doing graphs  
-	LIST = False  # flag for writing hueLst
+	LIST = True  # flag for writing hueLst
+	# x_offset,y_offset = 100,20
 
 	def __init__(self,label) -> None:
 		self.wo = WindowObject(label)
-		# self.wo.win = GraphWin(self.wo.name,*self.wo.dtpl)
-
-	
+		with open('file.txt', 'w') as f:
+			f.write('')
 
 	def zoom_loop(self):
-		GRAPH = True
-		# self.wo.draw()
-		# create state_path
 		dp = 0
-		self.x_offset,self.y_offset = 100,20
-		ip = StatePath('G')   #string of states in the run
+		st = State(self,dp)  # creates State object with parent ip which holds the Transform
+		self.zoom_draw_display(st,dp)
 
-		# create initial state
-		im = State(ip,dp)  # creates State object with parent ip which holds the Transform
-		ip.zoom_draw_display(im,dp)
-		self.print_coords(dp)
+		if StatePath.GRAPH: self.graph_state(st,dp)
 
-
-		if StatePath.GRAPH:
-			# create draw display graph
-			hg = HueGraph(dp)
-			im.graph_image = hg.color_frequency_graph()
-
-			im.graph_image_filename = 'data/graph_image_fileB' + str(dp) + '.png'
-			im.graph_image.save(im.graph_image_filename)
-
-			wd = self.wo.win.width 
-			in_window(2.25*X,Y/2,im.graph_image_filename,ip.wo.win)
-
-		ip.bt = Button(ip.wo.win,Point(X - 50,Y - 30),60,30,'==>')
-		ip.bt.draw()
+		self.bt = Button(self.wo.win,Point(X - 50,Y - 30),60,30,'==>')
+		self.bt.draw()
 
 		dp = 1
 		while True:  # loop over post-initial states
-			ip.bt.deactivate()
-			im = State(ip,dp)   # new state im
+			self.bt.deactivate()
+			st = State(self,dp)   # new state im
 
-			im.select()
-			ip.zoom_draw_display(im,dp)
-			
-			# self.print_coords()
+			st.select()
+			self.zoom_draw_display(st,dp)
 	
-			if GRAPH==True:
-				# create,store, display graph
-				hg = HueGraph(dp)
-				im.graph_image = hg.color_frequency_graph()
-				im.graph_image_filename = 'data/graph_image_fileB' + str(dp) + '.png'
-				im.graph_image.save(im.graph_image_filename)
-
-				wd_graph = im.graph_image.width
-				wd_win = ip.wo.win.width
-				wd_win/2
-				# wd = self.wo.win.width 
-				in_window(2.25*X,Y/2,im.graph_image_filename,ip.wo.win)
+			if StatePath.GRAPH: self.graph_state(st,dp)
 			
-			ip.bt.draw()
+			self.bt.draw()
 			dp += 1
+
+	def graph_state(self,st,dp):
+		hg = HueGraph(dp)
+		st.graph_image = hg.color_frequency_graph()
+		st.graph_image_filename = 'data/graph_image_fileB' + str(dp) + '.png'
+		st.graph_image.save(st.graph_image_filename)
+
+		# wd_graph = st.graph_image.width
+		# wd_win = self.wo.win.width
+		in_window(2.25*X,Y/2,st.graph_image_filename,self.wo.win)
 
 	def zoom_draw_display(self,im,dp):
 		self.zsel_transform(dp)
-		im.draw_image(dp)
+		im.draw_image(self.trxz,dp)
 		im.store_image_and_text(dp)
 		in_window(X/2,Y/2,im.image_filename,self.wo.win)
 
@@ -238,7 +225,14 @@ class StatePath(Ruler):
 		# use for upcoming draw image
 		self.trxz = Transform(X,Y,*self.zsel)
 		self.trzz = Transform(3,3,*self.zsel)
-		self.print_coords(dp)
+
+		# coords
+		zxa,zya,zxb,zyb = self.zsel
+		width = zxb-zxa
+		cx,cy = (zxa + zxb)/2 , (zya + zyb)/2 
+		self.data_string = str(dp) + ','+ str(cx) + ',' + str(cy) + ',' + str(width)
+
+	
 
 
 	def print_stats(self,dp):
@@ -251,23 +245,6 @@ class StatePath(Ruler):
 			print('trxz',self.trxz)
 		if hasattr(self,'trxx'):
 			print('trxx',self.trxx)
-
-	def print_coordsx(self,dp):
-		if not hasattr(self,'zsel'): return
-		zxa,zya,zxb,zyb = self.zsel
-		zxc,zyc = (zxa + zxb)/2,(zya + zyb)/2
-		dw = abs(zxb-zxa)
-		mag = 5**dp
-		print(dp,'cx,cy,dw',zxc,zyc,dw,mag)
-		print( int( 3/dw) )
-
-	def init_windowsx(self,dp):
-		"""shows initial state in both windows"""
-		self.trxz = Transform(X,Y,*SelectSeries.gzbox)
-		self.draw_image(dp,self.trxz)
-		self.image_filename = 'image'+str(dp) + '.png'
-		self.image.save(self.image_filename)
-		in_window(X/2,Y/2,self.image_filename,self.woX.win)
 
 
 	def init_button(self,win):
@@ -338,10 +315,6 @@ class MandelbrotCode:
 			if abs(z) > 2: break
 			z = z * z + c
 		hue = i/maxIt
-		# grayscale through colorsys is more gradieated
-		# direct i to hue is pretty stark black and white
-		# r,g,b = colorsys.hsv_to_rgb(hue,1,1)
-		
 		if hue > 0.98:
 			gr = 255
 		else:
@@ -353,13 +326,13 @@ class MandelbrotCode:
 
 
 if __name__ == "__main__":
-	sp = StatePath('X')
-	st = State(sp,3)
-	st.create_image_from_location()
+	if False:
+		sp = StatePath('X')
+		st = State(sp,3)
+		st.create_image_from_location()
 
-	sp.wo.win.getMouse()
-
-	exit()
-	sp = StatePath('X')
-	sp.zoom_loop()
+		sp.wo.win.getMouse()
+	else:
+		sp = StatePath('G')
+		sp.zoom_loop()
 

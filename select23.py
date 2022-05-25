@@ -128,8 +128,8 @@ class State(Ruler):
 		zsel = box_from_center(cx,cy,dw/2)
 		trxz = Transform(X,Y,*zsel)
 		self.draw_image(trxz,dp)
-		# self.store_image_and_text(dp)
-		# in_window(X/2,Y/2,self.image_filename,self.parent.wo.win)
+		self.store_image_and_text(dp)
+		in_window(X/2,Y/2,self.image_filename,self.parent.wo.win)
 
 		
 	def store_image_and_text(self,dp):

@@ -4,6 +4,7 @@
 from math import log10
 from modulefinder import LOAD_CONST
 from re import T
+from unittest.mock import PropertyMock
 
 import numpy as np
 import colorsys  
@@ -140,7 +141,7 @@ class HueGraph:
 
 		draw.text((50,10),"State " + str(self.dp) + "   # Hues " + str(self.n_hues) \
 			+ "  # Pixels:  Total " + sci_not(self.all_pixels) + ' (5.4)  Exterior ' \
-			       + str(sci_not(self.exterior_pixels)) + ' (' + self.logexterior\
+				   + str(sci_not(self.exterior_pixels)) + ' (' + self.logexterior\
 			+ ")  Interior " + str(sci_not(self.interior_pixels)) + ' (' + self.loginterior +')'  \
 			,(0,0,0),font=font)
 
@@ -159,21 +160,15 @@ class Viewer(WindowObject):
 	def __init__(self, label):
 		super().__init__(label)
 
-	def createx(self):
-		# all inherited from windowObject  see tutorial
-		vw.draw()
-
-	def show_image_file(self,dp):
-		self.image_file = 'data/movie_sequence/image_fileB' + str(dp) + '.png'
-		print(self.image_file,end=' ')
-		try: 
-			PIL.Image.open(self.image_file)
-			in_window(X/2,Y/2,self.image_file,vw.win)
+	def show_image_file(self,imfile):
+		print(myself())
+		print(imfile)
+		try:
+			im = PIL.Image.open(imfile)
 		except:
 			FileNotFoundError
-			print('not found')
-		# print()
 
+		in_window(X/2,Y/2,imfile,m.vw.win)
 
 	def show_graph_file(self,dp):
 		file = 'data/movie_sequence/graph_image_fileB' + str(dp) + '.png'
@@ -187,35 +182,106 @@ class Viewer(WindowObject):
 			print('not found',end='')
 		print()
 		
+	def thumbnails(self):
+		dp = 0
+		while True:
+			self.make_thumbnail(dp)
+			# vw.win.getMouse()
+			dp += 1
+
+class Menu(WindowObject):
+	def __init__(self, label,seq):
+		self.label = label
+		self.seq = seq
+		super().__init__(label)
+
+	# @property
+	def image_file(self,seq,typ):
+		if seq==0:
+			dir = 'data/sequence_baby_mand'
+		elif seq==1:
+			dir = 'data/movie_sequence' 
+		elif seq==2:
+			dir = 'data/varied_path'
+		if typ=='image':
+			ext = '/image_fileB'
+		elif typ=='tnail':
+			ext = '/thumb'
+		else:
+			ext = '/thumb'
+		stem = dir + ext
+		return stem, dir
+
+
+	def place_tnails(self):
+		self.win.setCoords(-0.5,-0.5,3.5,4.5)
+		stem,dir = self.image_file(1,'thumb')
+		for p in range(len(self.fLst)):
+			thfile = stem + str(p+2) + '.png'
+			print(thfile)
+			try: 
+				img = PIL.Image.open(thfile)
+			except:
+				FileNotFoundError
+				return
+			# tnail coords and dp
+			j,i = 4 - p//4, p%4
+			in_window(i ,j,thfile,m.win)
+			Text(Point(i,j),str(p+2)).draw(m.win).setFill('white')
+
+	def select_tnail(self):
+		while True:
+			clk = m.win.getMouse()
+			cx,cy = clk.x,clk.y
+			ci = Circle(Point(cx,cy),0.04).draw(m.win)
+
+			n = len(self.fLst)
+			for p in range(n-2):
+				j,i = 4 - p//4, p%4
+				if abs(cx-i) < 0.3 and abs(cy-j) < 0.3:
+					ci.setFill('cyan')
+					imfile = image_file(self.seq,'tnail')
+					print(p+2,imfile)
+					return imfile
+
+	def file_list(self,dir_name='data/movie_sequence'):
+		self.fLst = []
+		for f in os.listdir(dir_name):
+			if f.startswith('image_file'):
+				self.fLst.append(f)
+		print(self.fLst)
+
+	def make_thumbnail(self,dp):
+		# self.dir = self.dir1
+		self.imfile = self.image_file(1,'tnail')
+		if hasattr(self,'thfile'):
+			return
 		
+		try: 
+			img = PIL.Image.open(self.imfile)
+		except:
+			FileNotFoundError
+			return
 		
+		self.thfile = self.dir + self.thext + str(dp) + '.png'
+		img.thumbnail((100,100))
+		img.save(self.thfile)
+
+	def interact(self):
+		# self.dir =self.dir1
+		while True:
+			imfile = m.select_tnail()
+			m.vw.show_image_file(imfile)
 
 if __name__ == "__main__":
-	
-	if True:
-		# views sequence of image and graph images with annotations
-		vw = Viewer('G')
-		dp = 4
-		while True:
-			vw.show_image_file(dp)
-			vw.show_graph_file(dp)
-
-			clk = vw.win.getMouse()
-			if clk.x < X: dp -= 1
-			elif clk.x > X: dp += 1
-
-	else:
-		# draws graph from hueLst
-		def hueLst_to_display(dp):
-			hg = HueGraph(dp)
-			hg.process_raw_file()
-			hg.color_frequency_graph()
-			hg.im.show()
-
-		for dp in range(4,5):
-			hueLst_to_display(dp)
-
-
+	m = Menu('M',1)
+	m.vw = Viewer('X')
+	# m.sequence_files()
+	m.file_list('data/movie_sequence')  
+	for dp in range(len(m.fLst)):
+		m.make_thumbnail(dp)
+	m.place_tnails()
+	m.interact()  # select then show
 
 
 
