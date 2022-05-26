@@ -31,7 +31,7 @@ class Button:
 		self.rect.setFill('lightgray')
 		self.label = Text(center, label)
 		self.label.setSize(24)
-		# self.deactivate()
+		self.deactivate()
 
 	def draw(self):
 		self.undraw()
@@ -81,6 +81,7 @@ class Button:
 	def wait(self):
 		bt = self
 		"""pauses action until button click"""
+		self.activate()
 		while True:
 			clk = self.enclosing_win.getMouse()
 			if bt.clicked(clk): break

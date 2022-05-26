@@ -73,8 +73,6 @@ class State(Ruler):
 	def __init__(self,parent,dp) -> None:
 		self.dp = dp
 		self.parent = parent
-		self.write_directory = self.parent.write_directory
-		self.read_directory = self.parent.read_directory
 		
 	def select(self):
 		"""select box region with cursor  Confirm with ==> button
@@ -93,75 +91,54 @@ class State(Ruler):
 			bx_drawn = True
 		self.parent.bt.deactivate()
 
-	def zsel_transform(self,dp):
-		"""comes from two states bounding transition"""
-
-		if not hasattr(self,'zsel'):
-			st.zsel = Ruler.gzbox
-		self.trxz = Transform(X,Y,*st.zsel)
-		if not hasattr(self,'xsel'):
-			st.xsel = Ruler.gscreen
-		xsel = self.xsel  # created in state.select
-		zxa,zya,zxb,zyb = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
-		self.zsel  = min(zxa,zxb),min(zya,zyb),max(zxa,zxb),max(zya,zyb)
-		
-		# use for upcoming draw image
-		self.trxz = Transform(X,Y,*self.zsel)
-		self.trzz = Transform(3,3,*self.zsel)
-		# coords
-
-	def draw_image(self,trxz,dp):
+	def draw_image(self,trxz):
 		# print('   ',myself(),dp)
 		if State.LIST: self.hueLst = []
-		self.depth = dp
 		sp = 2
 
 		self.image = PIL.Image.new('RGB', (X,Y), color = (255,255,255))
 		self.image.pixels = self.image.load() 
 
-		# start_time = time.time()
+		start_time = time.time()
 
 		mn = MandelbrotCode()
-
 		for x in range(0,X,sp):
 			for y in range(0,Y,sp):
 				hue,r,g,b = mn.mandelbrot(*trxz.world(x,y),maxIt)
-				# if 1 - hue < 0.01:  # magenta red
-				# 	self.image.pixels[x,y] = Ruler.interior
-				# else:
-				self.image.pixels[x,y] = r,g,b
-				# if State.LIST: self.hueLst.append(hue)
+				if 1 - hue < 0.01:  # magenta red
+					self.image.pixels[x,y] = Ruler.interior
+				else:
+					self.image.pixels[x,y] = r,g,b
 
-		# elapsed_time = time.time() - start_time
+				if State.LIST: self.hueLst.append(hue)
 
-	def create_image_from_location(self):
-		dp = 3 
-		# cx,cy,dw = 0.34649107183915934, -0.37546362183256504, 0.02419296385348313
-		dw = 3/1024 # base dimension over magnification
-		cx,cy,dw = -0.59990625, -0.4290703125, dw
-		
+		elapsed_time = time.time() - start_time
+		print('elapsed time',elapsed_time)
+
+	def create_image_from_location(self,dp,cx,cy,dw):
 		zsel = box_from_center(cx,cy,dw/2)
 		trxz = Transform(X,Y,*zsel)
-		self.draw_image(trxz,dp)
-		self.store_image_and_text(dp)
-		in_window(X/2,Y/2,self.image_filename,self.parent.wo.win)
-		
-	def write_location_string(self):   # in data file for whole state path
-		with open(self.loc_file, 'a') as f:  
-			f.write(self.loc_data+ '\n')
+		self.draw_image(trxz)
 
-	def store_image_and_text(self,dp):
-		self.txfile = self.parent.write_directory + '/txfile_' + str(dp) + '.txt'
-		if dp==0:
-			with open(self.txfile, 'w') as f:
-				f.write(str(self.hueLst))
-		else:
-			with open(self.txfile, 'a') as f:	
-				f.write(str(self.hueLst))
+		self.store_huefile(dp)
+		self.store_image(dp)
 
-		# store_image(filename,save,image_name)
-		self.ifile = self.parent.write_directory + '/ifile_' + str(dp) + '.png'
+		in_window(X/2,Y/2,self.ifile,self.parent.wo.win)
+
+	def store_location_string(self):   # in data file for whole state path
+		with open(sp.location_data_file, 'a') as f:  
+			f.write(self.cx,self.cy.self.dw)
+
+	def store_huefile(self,dp):
+		# during view activity, don't store location string  on top of source file
+		self.hueFile = 'data/0525/huefile' + str(dp) + '.txt'
+		with open(self.hueFile, 'w') as f:	
+			f.write(str(self.hueLst))
+
+	def store_image(self,dp):
+		self.ifile = 'data/0525/ifile' + str(dp) + '.png'
 		self.image.save(self.ifile)
+
 
 	# -----------------------
 	def draw_graph(self,dp,hueLst):
@@ -172,30 +149,29 @@ class State(Ruler):
 		self.graph_image_filename = 'data/graph_image_fileB' + str(dp) + '.png'
 		self.graph_image.save(self.graph_image_filename)
 
-	
-
 class StatePath(Ruler):
 	GRAPH = False  # Flag for doing graphs  
 	LIST = True  # flag for writing hueLst
 	# x_offset,y_offset = 100,20
 
 
-	def __init__(self,label,read_directory,write_directory,loc_data) -> None:
-		self.wo = WindowObject(label)
-		self.read_directory = read_directory
-		self.write_directory = write_directory
-		self.write_directory
-		self.ldata_file = self.write_directory+'/loc_data.txt'
-
-
-		
-
+	def __init__(self,label,directory) -> None:
+		self.label = label
+		self.wo = WindowObject(label)  # graphic opened
+		self.directory = 'data/0525/'
+		self.location_data_file = self.directory + 'loc_data.txt'
+	
 	def zoom_loop(self):
 		dp = 0
+		# erase location data file
+		with open(self.location_data_file ,"w") as f:
+			f.write('')
 
 		st = State(self,dp)  # creates State object with parent ip which holds the Transform
 		self.zsel_transform(st,dp)
-		self.draw_store(st,dp)
+		st.store_hueFile(dp)
+		st.store_image(dp)
+		self.location_data(st,dp)
 
 		if StatePath.GRAPH: self.graph_state(st,dp)
 
@@ -210,6 +186,7 @@ class StatePath(Ruler):
 			st.select()
 			self.zsel_transform(st,dp)
 			self.draw_store(st,dp)
+			self.location_data(st,dp)
 	
 			if StatePath.GRAPH: self.graph_state(st,dp)
 			
@@ -238,36 +215,28 @@ class StatePath(Ruler):
 		xsel = st.xsel  # created in state.select
 		zxa,zya,zxb,zyb = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
 		dw = (zxb-zxa)
-		print('zsel_transform: dw',dw)
+		# print('zsel_transform: dw',dw)
 		self.zsel  = min(zxa,zxb),min(zya,zyb),max(zxa,zxb),max(zya,zyb)
 		
 		# use for upcoming draw image
 		self.trxz = Transform(X,Y,*self.zsel)
 		self.trzz = Transform(3,3,*self.zsel)
-		# coords
 
 
 	def draw_store(self,st,dp):
-		# self.zsel_transform(st,dp)
 		st.draw_image(self.trxz,dp)
 		st.store_image_and_text(dp)
 		in_window(X/2,Y/2,st.ifile,self.wo.win)
 
-	
-		
-
-
+	def location_data(self,st,dp):
 		zxa,zya,zxb,zyb = self.zsel
 		dw = zxb-zxa
 		cx,cy = (zxa + zxb)/2 , (zya + zyb)/2 
-		st.loc_data = str(dp) + ','+ str(cx) + ',' + str(cy) + ',' + str(dw)
-		print('dw',dw)
-		
-
-		with open(self.ldata_file,"a") as f:
-			print(st.loc_data)
+		st.loc_data = str(dp) + ': ' + str(cx) + ',' + str(cy) + ',' + str(dw) 
+		print(st.loc_data)
+	
+		with open(self.location_data_file ,"a") as f:
 			f.write('\n'+st.loc_data)
-			# f.write('\n'+s)
 
 	
 	def print_stats(self,dp):
@@ -285,7 +254,29 @@ class StatePath(Ruler):
 		self.bt = Button(win, Point( 460, 480), 70,30,'==>')
 		self.bt.label.setSize(24)
 		self.bt.draw()
-		self.bt.activate()
+
+	
+	def	states_from_location(self):
+		
+		with open(sp.location_data_file, 'r') as f:  
+			data = f.read()
+
+		data = data.split('\n')
+		data = data[1:-1]
+		self.init_button(self.wo.win)
+		for item in data:
+			item = item.split(',')
+			dp,cx,cy,dw = item
+			dp,cx,cy,dw = int(dp),float(cx),float(cy),float(dw)
+			st = State(sp,dp)
+			print('State',dp,end=' ')
+			st.create_image_from_location(dp,cx,cy,dw)
+			st.store_huefile(dp)
+			st.store_image(dp)
+
+			self.bt.draw()
+			self.bt.wait()
+			self.bt.deactivate()
 
 class MandelbrotCode:
 
@@ -360,14 +351,27 @@ class MandelbrotCode:
 
 
 if __name__ == "__main__":
-	if False:
-		sp = StatePath('X')
+	if True:
+		
+		sp = StatePath('X','0525')
+		sp.states_from_location()
+	
+
+		
+			
+
+	elif False:
+		sp = StatePath('X','0525')
 		st = State(sp,3)
-		st.create_image_from_location()
+		cx,cy,dw =  0.15041053520754566,-0.5857989914681447,0.0241929638534831
+		st.create_image_from_location(dp,cx,cy,dw)
+		exit()
+		sp = StatePath('X','0525')
+		sp.zoom_loop()
+		# write location to file
+		# st.create_image_from_location()
 
 		sp.wo.win.getMouse()
 	else:
-		path_loc_file = 'data/0523' + '/path_locations' + '.txt'
-		sp = StatePath('X','data/0523','data/0525',path_loc_file)
+		sp = StatePath('X','data/0523')
 		sp.zoom_loop()
-
