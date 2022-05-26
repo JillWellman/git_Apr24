@@ -1,5 +1,10 @@
-# select23.py
-"""	24 backed out to last night's 23.  renamed as 24
+# select26.py
+"""	24 and 26 recursive zoom works.  Saving saving copy saving on git.
+		in 26 will start integrating build from location.
+		all the fussy directory stuff.
+	25 broke and wasn't well backed up
+
+	24 backed out to last night's 23.  renamed as 24
 	23 move draw_object and related into helper (maybe mandelbrot)
 		so that others can use it -- all it needs is location
 	select 22 shows image and graph. Returns center and magnification
@@ -69,13 +74,12 @@ class State(Ruler):
 	def __init__(self,parent,dp) -> None:
 		self.dp = dp
 		self.parent = parent
-		self.write_directory= self.parent.write_directory
-		self.read_directory= self.parent.read_directory
+		self.write_directory = self.parent.write_directory
+		self.read_directory = self.parent.read_directory
 		
 	def select(self):
 		"""select box region with cursor  Confirm with ==> button
 		window in parent class"""
-		# print('   ',myself())
 		bx = Circle(Point(0,0),1).draw(self.parent.wo.win)  #dummy for undraw
 		bx_drawn = False   	  				 # only dummy drawn
 		while True:
@@ -90,6 +94,23 @@ class State(Ruler):
 			bx_drawn = True
 		self.parent.bt.deactivate()
 
+	def zsel_transform(self,dp):
+		"""comes from two states bounding transition"""
+
+		if not hasattr(self,'zsel'):
+			st.zsel = Ruler.gzbox
+		self.trxz = Transform(X,Y,*st.zsel)
+		if not hasattr(self,'xsel'):
+			st.xsel = Ruler.gscreen
+		xsel = self.xsel  # created in state.select
+		zxa,zya,zxb,zyb = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
+		self.zsel  = min(zxa,zxb),min(zya,zyb),max(zxa,zxb),max(zya,zyb)
+		
+		# use for upcoming draw image
+		self.trxz = Transform(X,Y,*self.zsel)
+		self.trzz = Transform(3,3,*self.zsel)
+		# coords
+
 	def draw_image(self,trxz,dp):
 		# print('   ',myself(),dp)
 		if State.LIST: self.hueLst = []
@@ -99,25 +120,21 @@ class State(Ruler):
 		self.image = PIL.Image.new('RGB', (X,Y), color = (255,255,255))
 		self.image.pixels = self.image.load() 
 
-		start_time = time.time()
+		# start_time = time.time()
 
 		mn = MandelbrotCode()
 
 		for x in range(0,X,sp):
-			if x==0:print('.',end='')
 			for y in range(0,Y,sp):
 				hue,r,g,b = mn.mandelbrot(*trxz.world(x,y),maxIt)
-				if abs(hue - 1) < 0.01: 
-					self.image.pixels[x,y] = Ruler.interior
-				else:
-					self.image.pixels[x,y] = r,g,b
-				if State.LIST: self.hueLst.append(hue)
+				# if 1 - hue < 0.01:  # magenta red
+				# 	self.image.pixels[x,y] = Ruler.interior
+				# else:
+				self.image.pixels[x,y] = r,g,b
+				# if State.LIST: self.hueLst.append(hue)
 
-		elapsed_time = time.time() - start_time
+		# elapsed_time = time.time() - start_time
 
-		# data_string = self.path_loc + ',' + str(elapsed_time)
-		
- 
 	def create_image_from_location(self):
 		dp = 3 
 		# cx,cy,dw = 0.34649107183915934, -0.37546362183256504, 0.02419296385348313
@@ -130,7 +147,7 @@ class State(Ruler):
 		self.store_image_and_text(dp)
 		in_window(X/2,Y/2,self.image_filename,self.parent.wo.win)
 		
-	def write_location_string(self):
+	def write_location_string(self):   # in data file for whole state path
 		with open(self.loc_file, 'a') as f:  
 			f.write(self.loc_data+ '\n')
 
@@ -176,8 +193,10 @@ class StatePath(Ruler):
 
 	def zoom_loop(self):
 		dp = 0
+
 		st = State(self,dp)  # creates State object with parent ip which holds the Transform
-		self.zoom_draw_display(st,dp)
+		self.zsel_transform(st,dp)
+		self.draw_store(st,dp)
 
 		if StatePath.GRAPH: self.graph_state(st,dp)
 
@@ -190,7 +209,8 @@ class StatePath(Ruler):
 			st = State(self,dp)   # new state im
 
 			st.select()
-			self.zoom_draw_display(st,dp)
+			self.zsel_transform(st,dp)
+			self.draw_store(st,dp)
 	
 			if StatePath.GRAPH: self.graph_state(st,dp)
 			
@@ -207,35 +227,42 @@ class StatePath(Ruler):
 		# wd_win = self.wo.win.width
 		in_window(2.25*X,Y/2,st.graph_image_filename,self.wo.win)
 
-	def zoom_draw_display(self,st,dp):
-		self.zsel_transform(st,dp)
-		st.draw_image(st.trxz,dp)
-		st.store_image_and_text(dp)
-		in_window(X/2,Y/2,st.ifile,self.wo.win)
 
 	def zsel_transform(self,st,dp):
 		"""comes from two states bounding transition"""
+		if not hasattr(self,'zsel'):
+			self.zsel = Ruler.gzbox
+		self.trxz = Transform(X,Y,*self.zsel)
 
-		if not hasattr(st,'zsel'):
-			st.zsel = Ruler.gzbox
-		st.trxz = Transform(X,Y,*st.zsel)
 		if not hasattr(st,'xsel'):
 			st.xsel = Ruler.gscreen
 		xsel = st.xsel  # created in state.select
-		zxa,zya,zxb,zyb = st.trxz.world(xsel[0],xsel[1]) + st.trxz.world(xsel[2],xsel[3])
-		st.zsel  = min(zxa,zxb),min(zya,zyb),max(zxa,zxb),max(zya,zyb)
+		zxa,zya,zxb,zyb = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
+		dw = (zxb-zxa)
+		print('zsel_transform: dw',dw)
+		self.zsel  = min(zxa,zxb),min(zya,zyb),max(zxa,zxb),max(zya,zyb)
 		
 		# use for upcoming draw image
-		st.trxz = Transform(X,Y,*st.zsel)
-		st.trzz = Transform(3,3,*st.zsel)
+		self.trxz = Transform(X,Y,*self.zsel)
+		self.trzz = Transform(3,3,*self.zsel)
 		# coords
+
+
+	def draw_store(self,st,dp):
+		# self.zsel_transform(st,dp)
+		st.draw_image(self.trxz,dp)
+		st.store_image_and_text(dp)
+		in_window(X/2,Y/2,st.ifile,self.wo.win)
+
+	
 		
 
 
-		zxa,zya,zxb,zyb = st.zsel
-		width = zxb-zxa
+		zxa,zya,zxb,zyb = self.zsel
+		dw = zxb-zxa
 		cx,cy = (zxa + zxb)/2 , (zya + zyb)/2 
-		st.loc_data = str(dp) + ','+ str(cx) + ',' + str(cy) + ',' + str(width)
+		st.loc_data = str(dp) + ','+ str(cx) + ',' + str(cy) + ',' + str(dw)
+		print('dw',dw)
 		
 
 		with open(self.ldata_file,"a") as f:

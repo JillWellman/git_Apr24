@@ -76,10 +76,10 @@ def window_location(win,w,h,x,y):
 
 
 
-def box_from_center(cx,cy,w):
+def rect_from_center(cx,cy,w):
 	xa,ya,xb,yb = cx-w,cy-w,cx+w,cy+w
-	Rectangle(Point(xa,ya),Point(xb,yb))
-	return xa,ya,xb,yb 
+	return Rectangle(Point(xa,ya),Point(xb,yb))
+	
 
 
 def rec_draw(abox,win) :

@@ -67,11 +67,7 @@ class State(Ruler):
 	def __init__(self,parent,dp) -> None:
 		self.dp = dp
 		self.parent = parent
-		# if self.parent.LIST: self.LIST = True
 		
-		"""record center and side2 
-		with mandelbrot allows state replication"""
-
 	def select(self):
 		"""select box region with cursor  Confirm with ==> button
 		window in parent class"""
@@ -119,16 +115,10 @@ class State(Ruler):
 		elapsed_time = time.time() - start_time
 		# print('elapsed time',round(elapsed_time,3))
 
-	def create_image_from_location(self):
-		dp = 3 
-		# cx,cy,dw = 0.34649107183915934, -0.37546362183256504, 0.02419296385348313
-		dw = 3/1024 # base dimension over magnification
-		cx,cy,dw = -0.59990625, -0.4290703125, dw
-		
-		zsel = box_from_center(cx,cy,dw/2)
-		trxz = Transform(X,Y,*zsel)
-		self.draw_image(trxz,dp)
-		self.store_image_and_text(dp)
+	def create_image_from_location(self,cx,cy,dw):
+		# cx,cy,dw = -0.59990625, -0.4290703125, 3/1024
+		self.draw_image(self.trxz)
+		self.store_image_and_text(self.dp)
 		in_window(X/2,Y/2,self.image_filename,self.parent.wo.win)
 
 		
@@ -157,9 +147,6 @@ class StatePath(Ruler):
 
 	def __init__(self,label) -> None:
 		self.wo = WindowObject(label)
-		# self.wo.win = GraphWin(self.wo.name,*self.wo.dtpl)
-
-	
 
 	def zoom_loop(self):
 		GRAPH = True
@@ -180,7 +167,7 @@ class StatePath(Ruler):
 			hg = HueGraph(dp)
 			im.graph_image = hg.color_frequency_graph()
 
-			im.graph_image_filename = 'data/graph_image_fileB' + str(dp) + '.png'
+			im.graph_image_filename = 'data/graph_image_fileA' + str(dp) + '.png'
 			im.graph_image.save(im.graph_image_filename)
 
 			wd = self.wo.win.width 
@@ -217,8 +204,9 @@ class StatePath(Ruler):
 
 	def zoom_draw_display(self,im,dp):
 		self.zsel_transform(dp)
-		im.draw_image(dp)
-		im.store_image_and_text(dp)
+		self.transforms()
+		cx,cy,dw = self.location_triad()
+		im.create_image_from_location(cx,cy,dw)
 		in_window(X/2,Y/2,im.image_filename,self.wo.win)
 
 	def zsel_transform(self,dp):
@@ -230,18 +218,27 @@ class StatePath(Ruler):
 		if not hasattr(self,'xsel'):
 			self.xsel = Ruler.gscreen
 		xsel = self.xsel  # created in state.select
-		xa,ya,xb,yb = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
-		self.zsel  = min(xa,xb),min(ya,yb),max(xa,xb),max(ya,yb)
-		# print('\nzsel',self.zsel)
-		
-		# use for upcoming draw image
-		self.trxz = Transform(X,Y,*self.zsel)
-		self.trzz = Transform(3,3,*self.zsel)
-		self.print_coords(dp)
+		zxa,zya,zxb,zyb = self.trxz.world(xsel[0],xsel[1]) + self.trxz.world(xsel[2],xsel[3])
+		self.zsel  = min(zxa,zxb),min(zya,zyb),max(zxa,zxb),max(zya,zyb)
+
+		self.location_triad()
+		self.transforms()
+
+	def location_triad(self):
+		if not hasattr(self,'zsel'): return
+		zxa,zya,zxb,zyb = self.zsel
+		zxc,zyc = (zxa + zxb)/2,(zya + zyb)/2
+		dw = abs(zxb-zxa)
+		return zxc,zyc,dw	
 
 	
 
 
+	def transforms(self):
+		# use for upcoming draw image
+		self.trxz = Transform(X,Y,*self.zsel)
+		self.trzz = Transform(3,3,*self.zsel)
+		self.print_coords(dp)
 
 	def print_stats(self,dp):
 		print('\n',myself(),'---- depth',dp)
@@ -254,14 +251,7 @@ class StatePath(Ruler):
 		if hasattr(self,'trxx'):
 			print('trxx',self.trxx)
 
-	def print_coords(self,dp):
-		if not hasattr(self,'zsel'): return
-		zxa,zya,zxb,zyb = self.zsel
-		zxc,zyc = (zxa + zxb)/2,(zya + zyb)/2
-		dw = abs(zxb-zxa)
-		mag = 5**dp
-		print(dp,'cx,cy,dw',zxc,zyc,dw,mag)
-		print( int( 3/dw) )
+	
 
 	def init_windows(self,dp):
 		"""shows initial state in both windows"""
@@ -357,7 +347,6 @@ class MandelbrotCode:
 if __name__ == "__main__":
 	sp = StatePath('X')
 	st = State(sp,3)
-	st.create_image_from_location()
 
 	sp.wo.win.getMouse()
 
