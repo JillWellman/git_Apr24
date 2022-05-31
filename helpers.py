@@ -21,6 +21,28 @@ def inside(clk,box):
 	return xa < cx < xb and ya < cy < yb
 
 
+def file_list1(dir_name):
+	print('file_lst1')
+	fLst = []
+	for f in os.listdir(dir_name):
+		print(f)
+		# if f.endswith(end_string):
+			# print(f)
+			# im = PIL.Image.open(dir_name +'/' + f)
+			# im.show()
+			# fLst.append(f)
+	return os.listdir(dir_name)
+
+def file_list(dir_name):
+	fLst = []
+
+	for f in os.listdir(dir_name):
+		# if f.endswith(end_string):
+		# 	# print(f)
+		# 	im = PIL.Image.open(dir_name +'/' + f)
+		# 	# im.show()
+		fLst.append(f)
+	return fLst
 
 
 def string_to_list(str):

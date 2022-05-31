@@ -85,6 +85,7 @@ class Button:
 		while True:
 			clk = self.enclosing_win.getMouse()
 			if bt.clicked(clk): break
+		self.deactivate
 
 	
 
@@ -94,6 +95,6 @@ if __name__=='__main__':
 	bt = Button(enclosing_win, Point( (X-50),(Y-30)), 60, 25,'==>')
 	bt.draw()
 	bt.label.setSize(24)
-	bt.activate()
+	# bt.activate()
 	bt.wait()
 	print('done')

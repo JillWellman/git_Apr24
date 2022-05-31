@@ -1,7 +1,12 @@
 # directories.py
+import PIL
+from PIL import Image
+
 
 import os
 import pathlib
+
+
 
 def print_files(dir_name):
 	print()
@@ -9,23 +14,33 @@ def print_files(dir_name):
 		if x.startswith('image_file'):
 			print(x)
 
-def file_list(dir_name):
+
+
+def file_list1(dir_name,end_string):
 	fLst = []
+
 	for f in os.listdir(dir_name):
-		if f.startswith('image_file'):
+		if f.endswith(end_string):
+			print(f)
+			im = PIL.Image.open(dir_name +'/' + f)
+			im.show()
 			fLst.append(f)
 	print(fLst)
+
+
+
+dir_name = 'data/jhw0527'
+file_list1(dir_name,'png')
+
+
 	
 
-babydir = "./data/sequence_baby_mand/"
-file_list(babydir)
 
 
-fileLst = [file for file in os.listdir(babydir)]
-print(fileLst)
-print_files(babydir)
 
 
+
+exit()
 
 print( pathlib.Path.cwd )
 print( pathlib.Path )

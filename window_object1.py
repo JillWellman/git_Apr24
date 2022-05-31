@@ -21,7 +21,9 @@ class WindowObject(Ruler):
 	def __init__(self,label):
 		self.label = label
 		self.name = 'win' + self.label
+		self.attributes()
 
+	def attributes(self):
 		self.dimensions()
 		self.graphic()
 		self.coords()
@@ -34,6 +36,8 @@ class WindowObject(Ruler):
 			self.dtpl = (X,1.5*Y)
 		else:
 			self.dtpl = X,Y
+
+		return
 	
 	def coords(self):
 		# self.ctpl = (0,0,X,Y)
