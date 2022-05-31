@@ -1,0 +1,16 @@
+# file names
+
+in data/date folder:
+
+for   statePath
+  lcfile.txt  
+  data = loc_string
+
+for state   data = img,tnail,hueLst
+  ifile_dp.png  image       ifile7.png  no underscore
+  tfile_dp.png  thumbnail
+  hfile_dp.txt    hueLst
+  gfile_dp.png
+ --
+  loc_string -- state data string for loc_file.txt
+
