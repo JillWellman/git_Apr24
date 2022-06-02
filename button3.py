@@ -30,15 +30,14 @@ class Button:
 		self.rect = Rectangle(p1,p2)
 		self.rect.setFill('lightgray')
 		self.label = Text(center, label)
-		self.label.setSize(22)
+		self.label.setSize(24)
 		self.deactivate()
 
 	def draw(self):
-		print(myself())
+		self.undraw()
 		try: self.rect.draw(self.enclosing_win)
 		except:
 			GraphicsError
-			print('draw button error')
 		try: self.label.draw(self.enclosing_win)
 		except:
 			GraphicsError
@@ -75,15 +74,14 @@ class Button:
 		self.active = 0
 
 	def hide(self):
-		"""Sets this button to 'inactive' and undraws it"""
+		"""Sets  button to 'inactive' and undraws it"""
 		self.undraw()
 		self.deactivate()
 
 	def wait(self):
 		bt = self
 		"""pauses action until button click"""
-		bt.draw()
-		bt.activate()
+		self.activate()
 		while True:
 			clk = self.enclosing_win.getMouse()
 			if bt.clicked(clk): break

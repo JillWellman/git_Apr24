@@ -2,31 +2,58 @@ import sys
 sys.path.append (r'/Users/jillwellman_sept09_2012/Desktop/Python/my-python-project/myImports')
 sys.path.append (r'/Users/jillwellman_sept09_2012/Desktop/Python/myProjects/myModules')
 
+import PIL
+import PIL.Image
+
 from graphics import *
 from mygraphics import *
 import colorsys
+from ruler0 import Ruler
+
+maxIt = Ruler.maxIt
 
 
 
+
+def inside(clk,box):
+	cx,cy = clk
+	xa,ya,xb,yb = box
+	return xa < cx < xb and ya < cy < yb
+
+
+
+
+def string_to_list(str):
+	str = str[1:-1]
+	lst = str.split(', ')
+	return(lst)
+	# hueLst = list(map(lambda l: float(l),lst))
+
+	print('list',lst)
+
+def count_frequency(my_list):
+	   count = {}
+	   for i in my_list:
+		   count[i] = count.get(i, 0) + 1
+	   return count
+
+def sci_not(num):
+	return f"{num:,}"
 
 def rec_draw(abox,win) :
     xa,ya,xb,yb =  abox
     return Rectangle(Point(xa,ya),Point(xb,yb)).draw(win)
 
+
 def grid(crnLst,win,u):
 	xa,ya,xb,yb = crnLst
+	xa,xb = int(xa),int(xb)
 	for i in range(xa,xb+1,u):
 		for j in range(ya,yb+1,u):
 			Rectangle(Point(i,j),Point(i+u,j+u)).draw(win)
 			# Text(Point(i-0.03*u,j-0.07*u),str(i)+', '+str(j)).draw(win).setSize(18)
 			Text(Point(i+0.15,j-0.07*u),str(i)+', '+str(j)).draw(win).setSize(18)
 
-def gridx(crnLst,win,u):
-	xa,ya,xb,yb = crnLst
-	for i in range(xa,xb,u):
-		for j in range(ya,yb,u):
-			Rectangle(Point(i,j),Point(i+u,j+u)).draw(win)
-			Text(Point(i-0.08,j+0.07),str(i)+','+str(j)).draw(win).setSize(18)
 
 
 def grid_labels(box,win):
@@ -44,11 +71,15 @@ def grid_labels(box,win):
 		Text( Point((xa+xb)/2,ya), str(round(ya,2))).draw(win).setSize(18)
 		Text( Point((xa+xb)/2,yb), str(round(yb,2))).draw(win).setSize(18)
 
+def window_location(win,w,h,x,y):
+    win.master.geometry( '%dx%d+%d+%d' % (w, h, x, y) )
 
-def box_from_center(cx,cy,w):
+
+
+def rect_from_center(cx,cy,w):
 	xa,ya,xb,yb = cx-w,cy-w,cx+w,cy+w
-	Rectangle(Point(xa,ya),Point(xb,yb))
-	return xa,ya,xb,yb 
+	return Rectangle(Point(xa,ya),Point(xb,yb))
+	
 
 
 def rec_draw(abox,win) :
@@ -62,33 +93,11 @@ def min_corner(box):
 	xa,ya,xb,yb = box
 	return min(xa,xb),min(ya,yb)
 
-def mandelbrot(x,y,maxIt):
-	c = complex(x,y)
-	z = complex(0,0)
-	for i in range(maxIt):
-		if abs(z) > 2: break
-		z = z * z + c
-	hue = (i/maxIt)
-	return hue
-	
-	r,g,b = colorsys.hsv_to_rgb(hue,1,1)
-	return  int(255*r),int(255*g),int(255*b)
+def in_window(cx,cy,file,wind):
+    imW = gImage(Point(cx,cy),file)
+    imW.draw(wind)
 
-def mandelbrot_edges(x,y,maxIt):
-	c = complex(x,y)
-	z = complex(0,0)
-	for i in range(maxIt):
-		if abs(z) > 2: break
-		z = z * z + c
-	hue = i/maxIt
-	# grayscale through colorsys is more gradieated
-	# direct i to hue is pretty stark black and white
-	# r,g,b = colorsys.hsv_to_rgb(hue,1,1)
-	
-	if hue > 0.98:
-		gr = 255
-	else:
-		gr = int( 255*( 1 - hue ) )
-		# r,g,b = int(gr),int(gr),int(gr)
-	return gr, gr, gr
+
+
+
 

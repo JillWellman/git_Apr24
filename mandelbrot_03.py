@@ -2,7 +2,7 @@
 
 from __future__ import annotations  # Union type syntax
 from dataclasses import dataclass
-from math import log
+from math import log10
 
 
 @dataclass
