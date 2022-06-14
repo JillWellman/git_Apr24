@@ -12,7 +12,8 @@ from ruler0 import Ruler
 
 maxIt = Ruler.maxIt
 
-
+def box_from_center(cx,cy,dw):
+	return cx-dw/2,cy-dw/2,cx+dw/2,cy+dw/2
 
 
 def inside(clk,box):
@@ -20,7 +21,9 @@ def inside(clk,box):
 	xa,ya,xb,yb = box
 	return xa < cx < xb and ya < cy < yb
 
-
+def rect_from_box(box):
+	xa,ya,xb,yb = box
+	return Rectangle(Point(xa,ya),Point(xb,yb))
 
 
 def string_to_list(str):
@@ -37,7 +40,7 @@ def count_frequency(my_list):
 		   count[i] = count.get(i, 0) + 1
 	   return count
 
-def sci_not(num):
+def comma_not(num):
 	return f"{num:,}"
 
 def rec_draw(abox,win) :

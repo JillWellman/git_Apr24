@@ -5,7 +5,6 @@ if __name__=='__main__':
 	sys.path.append (r'/Users/jillwellman_sept09_2012/Desktop/Python/myProjects/myModules')
 	sys.path.append (r'/Users/jillwellman_sept09_2012/Desktop/Python/my-python-project/draw_zoom_may5')
 
-from cProfile import label
 from graphics import *
 from mygraphics import *
 from ruler0 import Ruler
