@@ -6,6 +6,9 @@
 		{
 			"path": "../../myProjects/myModules"
 		}
+		{
+			"path": "../../draw_zoom"
+		}
 	],
 	"settings": {}
 }

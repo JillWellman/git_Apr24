@@ -107,6 +107,7 @@ class HueGraph:
 			self.hueLst = []
 
 	def dictionary(self,dp):
+		print(myself())
 		self.hue_dic = count_frequency(self.hueLst)
 		self.n_hues = len(self.hue_dic)
 		self.all_pixels = X*Y
@@ -172,7 +173,8 @@ class HueGraph:
 
 		self.img.show()
 		self.img.save('data/june14/gfile' + str(dp) + '.png')
-
+		print('j')
+		
 	def save_show(self,dp):
 		# self.img.show()
 		print(myself())

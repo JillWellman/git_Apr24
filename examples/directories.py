@@ -17,16 +17,16 @@ def file_list(dir_name):
 	print(fLst)
 	
 
-babydir = "./data/sequence_baby_mand/"
-file_list(babydir)
+mydir = './'
+print('mydir',mydir)
+print(  os.listdir(mydir)  )
+print()
+wo_file = mydir + 'window_object1.py'
+from window_object1 import *
+print( wo_file )
 
 
-fileLst = [file for file in os.listdir(babydir)]
-print(fileLst)
-print_files(babydir)
-
-
-
+exit()
 print( pathlib.Path.cwd )
 print( pathlib.Path )
 

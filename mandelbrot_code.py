@@ -9,6 +9,7 @@ sys.path.append (r'/Users/jillwellman_sept09_2012/Desktop/Python/myProjects/myMo
 sys.path.append (r'/Users/jillwellman_sept09_2012/Desktop/Python/my-python-project')
 
 from PIL import Image
+from ruler0 import Ruler
 import numpy as np
 from PIL import Image as im
 import PIL
@@ -36,15 +37,23 @@ maxIt = Ruler.maxIt  # may need to change with multiple zooms
 
 class MandelbrotCode:
 	
-	def __init__(self,location,dp):
-		self.location = location
-		self.dp = dp
-		self.trxz = self.trxz_return()
-
-	def trxz_return(self):
-		zsel = box_from_center(*self.location)
-		return Transform(X,Y,*zsel)
+	def __init__(self):
+		pass
 		
+	
+
+	def mandelbrot_core(self,trxz):
+		self.image = PIL.Image.new('RGB', (X,Y), color = (255,255,255))
+		self.image.pixels = self.image.load() 
+
+		sp = 1
+		self.hueLst = []
+		for x in itertools.count(0,sp):
+			if x==X:break
+			for y in itertools.count(0,sp):
+				if y==Y: break
+				self.image.pixels[x,y] =  self.mandelbrot(*trxz.world(x,y),maxIt)
+
 	def mandelbrot(self,x,y,maxIt):
 		c = complex(x,y)
 		z = complex(0,0)
@@ -55,45 +64,14 @@ class MandelbrotCode:
 			hue = (i/maxIt)
 			clr = colorsys.hsv_to_rgb(hue,1,1)
 			r,g,b = [int(255*j) for j in clr]
-		return hue
-
-	def mandelbrot_image(self,dp):
-		print(myself())
-		self.image = PIL.Image.new('RGB', (X,Y), color = (255,255,255))
-		self.image.pixels = self.image.load() 
-		sp = 1
-		self.hueLst = []
-		for x in itertools.count(0,sp):
-			if x==X:break
-			for y in itertools.count(0,sp):
-				if y==Y: break
-				hue= self.mandelbrot(*self.trxz.world(x,y),maxIt)
-				self.hueLst.append(hue)
-				r,g,b = self.hue_to_rgb(hue)
-				self.image.pixels[x,y] = r,g,b
-
-		self.write_data_files(dp)
-		return self.trxz
-
-	def write_data_files(self,dp):
-		print('max hueLst',max(self.hueLst))
-		# self.image.show()
-
-		# 800 (=maxIt hues/image??)
-		self.hfile = Ruler.datadir2+'hfile' + str(dp) + '.txt'
-		with open(self.hfile, "w") as f:
-			f.write(str(self.hueLst))
-		self.ifile = Ruler.datadir2+'ifile' + str(dp) + '.png'
-		self.image.save(self.ifile)
-
-				
-
-	def hue_to_rgb(self,hue):
-		r,g,b = colorsys.hsv_to_rgb(hue,1,1)
-		r,g,b = int(255*r),int(255*g),int(255*b)
-		# r,g,b = [int(255*i) for i in clr]
 		return r,g,b
 
+				
+	def hue_to_rgbx(self,hue):
+		r,g,b = colorsys.hsv_to_rgb(hue,1,1)
+		r,g,b = int(255*r),int(255*g),int(255*b)
+		
+		return r,g,b
 
 	def hueLst_to_image(self):
 		print(myself())
@@ -107,7 +85,7 @@ class MandelbrotCode:
 		# img = PIL.Image.open('ifile.png')
 		# img.show()
 
-	def mandelbrot(self,x,y,maxIt):
+	def mandelbrotx(self,x,y,maxIt):
 		c = complex(x,y)
 		z = complex(0,0)
 		for i in itertools.count(0):
@@ -139,7 +117,7 @@ class MandelbrotCode:
 
 		print('done',start - time.time())
 
-	def image_from_hfilex(self,dp):
+	def image_from_hfilexx(self,dp):
 		'''NumPy uses the asarray() class to convert PIL images into NumPy arrays. The np.array function also produce the same result. The type function displays the class of an image.
 		The process can be reversed using the Image.fromarray() f'''
 
@@ -176,7 +154,6 @@ class MandelbrotCode:
 			gr = 255
 		else:
 			gr = int( 255*( 1 - hue ) )
-			# r,g,b = int(gr),int(gr),int(gr)
 		return gr, gr, gr
 
 	
@@ -184,10 +161,13 @@ class MandelbrotCode:
 
 if __name__ == "__main__":
 	location = -0.75,0,0.6
+	dp = 1
 	location = - 0.5,0,3
 	dp = 0
-	mn = MandelbrotCode(location,dp)
-	mn.mandelbrot_image(dp)
-	# mn.hueLst_to_image()    np conversion needs a repeated pattern
-	# mn.image_from_hfile(dp)
+	zsel = box_from_center(*location)
+	trxz = Transform(X,Y,*zsel)
+	
+	mn = MandelbrotCode()
+	mn.mandelbrot_core(trxz)
+	# mn.image.show()
 	

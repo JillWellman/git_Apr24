@@ -58,8 +58,7 @@ class State():
 		hg = HueGraph(dp)
 		hg.xy_axes(dp)
 		hg.dictionary(dp)
-		hg.image.show()
-		# hg.dictionary(dp)   # works off hueLst local to State
+		hg.dictionary(dp)   # works off hueLst local to State
 		# hg.data_bars(dp)
 		self.image = hg.image
 		self.image.save(self.gfile)
@@ -73,11 +72,11 @@ class StatePath():
 
 	def click_loop(self):
 		r = 10
-		"""path space holds window and accepts clicks"""
+		"""path space holds window, displays states, and accepts clicks"""
 		location = -0.5,0,3  # inital state
 		dp = 0
 		st = State(self,location,dp)
-		st.make_drawing(dp)
+		# st.make_drawing(dp)
 		# st.make_graph(dp)
 
 		in_window(X/2,Y/2,st.ifile,self.wo.win)
