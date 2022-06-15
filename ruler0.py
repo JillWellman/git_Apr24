@@ -2,7 +2,7 @@
 import colorsys
 
 class Ruler():
-	X,Y = 500,500
+	X,Y = 250,250
 	zX,zY = 3,3
 	gscreen = 0,Y,X,0
 	gzbox = -2,-1.5,1,1.5

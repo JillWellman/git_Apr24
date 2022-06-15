@@ -20,7 +20,7 @@ import inspect
 myself = lambda: inspect.stack()[1][3]       
 
 X,Y = Ruler.X,Ruler.Y
-datadir2 = Ruler.datadir2
+# datadir2 = Ruler.datadir2
 
 def Sort_Tuples(tup):
  
@@ -40,37 +40,46 @@ class HueGraph:
 	reports # different hues produced, finds number of pixels in figure interior
 	draws graph and reports info"""
 
-	def __init__(self,parent,dp) -> None:
-		self.parent = parent
+	def __init__(self,dp) -> None:
 		self.dp = dp
+		self.gfile = 'data/june14/gfile' + str(dp) + '.png'
 
-	def create_graph(self,dp):
+		gr = 200
+		self.img = PIL.Image.new("RGB", (int(3*X),Y), (gr,gr,gr))
+		self.img.save(self.gfile)
+		
+	def frequency_core(self,dp):
 		print(myself(),dp)
 
 		# draw y_scale and set spacing parameters
-		self.y_scale_labels()
+		self.xy_axes()
+		# self.dictionary(dp)
+		# self.data_bars(dp)
+
 		
 		# create bar graph object
-		self.time_list()
+		# self.time_list()
 
-		self.location_list()
+		# self.location_list()
 		# cx,cy,dw = self.locLst[dp+1]
 		# print(cx,cy)
 		# Circle(Point(cx,cy),10).draw(self.parent.wo.win)
 
-		self.hue_list(dp)
-		if self.hue_list==[]: return
-		self.dictionary(dp)
-		self.data_bars(dp)
+		# self.hue_list(dp)
+		# if self.hue_list==[]: return
+		if False:
+			self.dictionary(dp)
+			self.data_bars(dp)
 
-		# pixel counts
-		self.fifty_line()
-		self.percent_interior()
-		self.caption(dp)
+			# pixel counts
+			self.fifty_line()
+			self.percent_interior()
+			self.caption(dp)
 
-		self.gfile = Ruler.datadir2 + 'gfile' + str(dp) + '.png'
-		self.img.save(self.gfile)
-		in_window(X + 3*X/2,Y/2,self.gfile,self.parent.wo.win)
+			self.gfile = 'data/june14/gfile' + str(dp) + '.png'
+			self.img.save(self.gfile)
+			self.img.show()
+			# in_window(X + 3*X/2,Y/2,self.gfile,self.parent.wo.win)
 		
 	def get_hues_from_image(self,dp):
 		hueLst = []
@@ -109,6 +118,7 @@ class HueGraph:
 
 	def data_bars(self,dp):
 		print(myself())
+
 		draw = PIL.ImageDraw.Draw(self.img)
 		font = ImageFont.load_default().font
 		font = ImageFont.truetype("Verdana.ttf",14)
@@ -130,29 +140,38 @@ class HueGraph:
 		self.x_max = x
 		self.count_interior = v
 
+		self.img.show()
+
 		print('x_max',self.x_max)
 		print('count_interior=v',v)
 
-	def y_scale_labels(self):
+	def xy_axes(self):
 		
 		print(myself())
 		"""defines image and graph scale parameters and draws y axis"""
-		self.img = PIL.Image.new("RGB", (int(3*X),Y), (255, 255, 255))
+	
+		self.y_unit = 0.85*Y/6
+		self.x_offset = 90  # left of y axis
+		self.y_offset = 20 # lower margin
+
 
 		draw = PIL.ImageDraw.Draw(self.img)
 		font = ImageFont.load_default().font
 		font = ImageFont.truetype("Verdana.ttf",14)
 
+		draw.line((0,0) + (X,Y),fill = 'magenta')
 		
-		self.y_unit = 0.85*Y/6
-		self.x_offset = 90  # left of y axis
-		self.y_offset = 15 # lower margin
-
 		# y_axis line
 		draw.line((self.x_offset,0)+(self.x_offset,Y),fill='black')  # mark zero point
 		# y axis labels
 		for i in range(7):
 			draw.text((self.x_offset-75, Y-i*self.y_unit-self.y_offset),str(comma_not(10**i)),(0,0,0),font=font,align='right')
+		# x axis labels
+		for i in range(4):
+			draw.text((self.x_offset+ i*2.5*X/3, Y-self.y_offset),str(round(i/3,2)),(0,0,0),font=font)
+
+		self.img.show()
+		self.img.save('data/june14/gfile' + str(dp) + '.png')
 
 	def save_show(self,dp):
 		# self.img.show()
@@ -161,10 +180,6 @@ class HueGraph:
 		# print(self.gfile)
 		self.img.save(self.gfile)
 		
-	def log_scale(self):
-		for p in range(100,10):
-			print(p,log10(p))
-
 	def fifty_line(self):	
 		print(myself())
 		fifty = Y - self.y_unit*log10(X*Y/2) - self.y_offset   # height of 50% line
@@ -285,46 +300,49 @@ class Viewer(WindowObject):
 		
 	def show_image(self,dp):
 		try:
-			file = 'data/June08_movie/ifile' + str(dp) + '.png'
+			file = 'data/June14/ifile' + str(dp) + '.png'
 			in_window(X/2,Y/2,file,self.wo.win)
 		except:
 			FileNotFoundError
 	
 	def show_graph(self,dp):
 		try:
-			file = 'data/June08_movie/gfile' + str(dp) + '.png'
+			file = 'data/June14/gfile' + str(dp) + '.png'
 			in_window(X + 3*X/2,Y/2,file,self.wo.win)
 		except:
 			FileNotFoundError
 
-	def log_scale(self):
-		vw.wo.win = GraphWin('',3*X,Y)
-		lst = []
-		x_unit = 3*X/15
-		for dp in range(13):
-			coord = comma_not( int(round( 10**(dp/2),0 )) )
-			lst.append(coord)
-			Text(Point(dp*x_unit,250),str(dp/2)).draw(vw.wo.win).size = 36
-			Text(Point(dp*x_unit,150),str(coord)).draw(vw.wo.win).size = 36
-		
-		
-		print()
+	
 		
 
 
 # =================== Tasks ======================
 if __name__ == "__main__":
 	task = "click_show_all"
-	# task = "click_create_graphs"
+	task = "click_create_graphs"
+	task = "show a graph"
 	
-	if task=="click_create_graphs":
+	if task=='show a graph':
+		vw = Viewer('G')
+		
+		dp = 0
+		hg = HueGraph(dp)
+		hg.frequency_core(dp)
+		
+		hg.gfile = 'data/june14/gfile' + str(dp) + '.png'
+		hg.img.save(hg.gfile)
+		hg.img.show()
+		in_window(X + 3*X/2 + 10,Y/2,hg.gfile,vw.wo.win)
+		vw.wo.win.getMouse()
+
+	elif task=="click_create_graphs":
 		vw = Viewer('G')
 		dp = 0
 		while True:
 			vw.show_image(dp)
 			vw.show_graph(dp)
 
-			vw.hg = HueGraph(vw,dp)  #vw = parent
+			vw.hg = HueGraph(dp)  #vw = parent
 			vw.hg.create_graph(dp)
 
 			dp = vw.clk_ordered(dp)
