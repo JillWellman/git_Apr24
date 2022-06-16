@@ -34,25 +34,34 @@ myself = lambda: inspect.stack()[1][3]
 
 X,Y = Ruler.X,Ruler.Y
 maxIt = Ruler.maxIt  # may need to change with multiple zooms
+h_int_color = Ruler.h_int_color
+rgb_int_color = Ruler.rgb_int_color
+
 
 class MandelbrotCode:
 	
 	def __init__(self):
-		pass
+		self.hueLst = []
 		
 	
 
-	def mandelbrot_core(self,trxz):
-		self.image = PIL.Image.new('RGB', (X,Y), color = (255,255,255))
-		self.image.pixels = self.image.load() 
+	def mandelbrot_core(self,trxz,sp):
+		print('sp',sp)
+		self.img = PIL.Image.new('RGB', (X,Y), color = (255,255,255))
+		self.img.pixels = self.img.load() 
 
-		sp = 1
-		self.hueLst = []
+		# sp = 1
 		for x in itertools.count(0,sp):
 			if x==X:break
 			for y in itertools.count(0,sp):
 				if y==Y: break
-				self.image.pixels[x,y] =  self.mandelbrot(*trxz.world(x,y),maxIt)
+				hue,r,g,b = self.mandelbrot(*trxz.world(x,y),maxIt)
+				if hue >= h_int_color: 
+					hue= h_int_color
+					r,g,b = rgb_int_color
+				self.hueLst.append(hue)
+				self.img.pixels[x,y] = r,g,b
+				
 
 	def mandelbrot(self,x,y,maxIt):
 		c = complex(x,y)
@@ -64,7 +73,7 @@ class MandelbrotCode:
 			hue = (i/maxIt)
 			clr = colorsys.hsv_to_rgb(hue,1,1)
 			r,g,b = [int(255*j) for j in clr]
-		return r,g,b
+		return hue,r,g,b
 
 				
 	def hue_to_rgbx(self,hue):

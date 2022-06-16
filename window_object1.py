@@ -28,7 +28,7 @@ class WindowObject(Ruler):
 
 	def dimensions(self):
 		if self.label=='G':
-			xg = X + 10 + 3*X
+			xg = X + 10 + 2*X
 			self.dtpl = (xg,Y)
 		elif self.label=='M':
 			self.dtpl = (X,1.5*Y)
